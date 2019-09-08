@@ -4,6 +4,7 @@ library(plyr)
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(lubridate)
 
 edsurvey_dir <- "/Users/Yuqi/Desktop/Files/AIR/GIT/edsurvey"
 load_all(edsurvey_dir)
@@ -24,24 +25,26 @@ lastItemReached_vars <- c("en11mitem", #last item is 20
                           "en11zitem", #20
                           "en11titem") #18
 ad_vars <- c("en11madz", "en11radz", "en11badz", "en11zadz", "en11tadz")
-time_startlogout_vars <- c("en11mtiml", "en11rtiml", "en11btiml", "en11ztiml", "en11ttiml")
 time_startlastitem_vars <- c("en11mtims", "en11rtims", "en11btims", "en11ztims", "en11ttims")
+time_startlogout_vars <- c("en11mtiml", "en11rtiml", "en11btiml", "en11ztiml", "en11ttiml")
 
-other_vars <- c("erea", "idcntry","idstud", "totwgt", "rotation", "itsex")
-allvars <- c(ad_vars, other_vars)
+time_lastitem_logout_vars <- c("en11mtimr", "en11rtimr", "en11btimr", "en11ztimr", "en11ttimr") #not existed yet, I'll create them later
+
+other_vars <- c("erea", "idcntry","idstud", "totwgt", "rotation", "itsex", "jkzone", "jkrep")
+allvars <- c(ad_vars, time_startlastitem_vars, time_startlogout_vars, lastItemReached_vars, other_vars)
+
+exportPath <- "/Users/Yuqi/Desktop/Files/AIR/GIT/InternationalAssessment_ProcessData/output"
+
+# ePIRLS_lesdf_cnt1 <- getData(data = ePIRLS$datalist[[1]],
+#                           varnames = allvars,
+#                           omittedLevels = FALSE, addAttributes = TRUE)
+# 
+# ePIRLS_lesdf_cnt1 %>% 
+#   select(idcntry , idstud, contains("en11")) %>% 
+#   View()
 
 
-ePIRLS_lesdf_cnt1 <- getData(data = ePIRLS$datalist[[1]],
-                          varnames = allvars,
-                          omittedLevels = FALSE, addAttributes = TRUE)
-
-ePIRLS_lesdf_cnt1 %>% 
-  select(idcntry , idstud, contains("en11")) %>% 
-  View()
-
-
-### click situation for each ad #####
-
+### 1. click situation for each ad #####
 out <- data.frame("IDCNTRY" = character(0),
                   "Var" = character(0),
                   "Min" = character(0),
@@ -82,9 +85,7 @@ for (cnt in ePIRLS$datalist) {
 }
 
 # export
-exportPath <- "/Users/Yuqi/Desktop/Files/AIR/GIT/InternationalAssessment_ProcessData/output"
-write.csv(out, file.path(exportPath,"eP16_summaryTable.csv"), row.names = FALSE)
-
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_eachModule_adClickSummaryTable.csv")), row.names = FALSE)
 
 
 ### for looking at the pct and score for each levels of ad click in each module
@@ -103,9 +104,9 @@ write.csv(out, file.path(exportPath,"eP16_summaryTable.csv"), row.names = FALSE)
 # View(cnt1_erea_en11madz$data)
 
 
-###  no-click vs click for each ad  #####
+###  2. no-click vs click for each ad  #####
 
-# create an empty data frame for looping
+## PCT and Score
 out <- data.frame("IDCNTRY" = character(0),
                   "YVar" = character(0),
                   "EqVar" = character(0),
@@ -154,7 +155,7 @@ for (cnt in ePIRLS$datalist) {
                                      message(cond)
                                      return(0)
                                    })
-    if (length(temp_edsurveytable$data) != 1) {
+    if (length(temp_edsurveytable) != 1) {
       out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_edsurveytable$data)))
       out_temp$YVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1]
       out_temp$EqVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[3]][1]
@@ -168,19 +169,142 @@ for (cnt in ePIRLS$datalist) {
       out_temp$n0 <- temp_edsurveytable$n0
       out_temp$nUsed <- temp_edsurveytable$nUsed
     } else {
-      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+      out_temp <- data.frame("IDCNTRY" = cnt$country,
                              "YVar" = str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1])
+    }
+    
+    out <- rbind.fill(out, out_temp)
+  }
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_eachModule_erea_adClick_pct.csv")), row.names = FALSE)
+
+
+## Score
+
+# out <- data.frame("IDCNTRY" = character(0),
+#                   "YVar" = character(0),
+#                   "EqVar" = character(0),
+#                   "EqVarValue" = character(0),
+#                   "N" = numeric(0),
+#                   "WTD_N" = numeric(0),
+#                   "PCT" = numeric(0),
+#                   "SE_PCT" = numeric(0),
+#                   "MEAN" = numeric(0),
+#                   "SE_MEAN" = character(0),
+#                   "n0" = integer(0),
+#                   "nUsed" = integer(0))
+
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = character(0),
+                  "pVal" = integer(0),
+                  "r2" = integer(0))
+
+
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(en11madz_d_clicked = as.factor(ifelse(is.na(en11madz), NA,
+                                                 ifelse(en11madz >= 1, 1, 0))),
+           en11radz_d_clicked = as.factor(ifelse(is.na(en11radz), NA,
+                                                 ifelse(en11radz >= 1, 1, 0))),
+           en11badz_d_clicked = as.factor(ifelse(is.na(en11badz), NA,
+                                                 ifelse(en11badz >= 1, 1, 0))),
+           en11zadz_d_clicked = as.factor(ifelse(is.na(en11zadz), NA,
+                                                 ifelse(en11zadz >= 1, 1, 0))),
+           en11tadz_d_clicked = as.factor(ifelse(is.na(en11tadz), NA,
+                                                 ifelse(en11tadz >= 1, 1, 0)))) %>% 
+    rebindAttributes(cnt)
+  
+  for (x in ad_vars) {
+    print(x)
+    
+    # temp_edsurveytable <- tryCatch(edsurveyTable(formula = as.formula(paste0("erea ~ ", x, "_d_clicked" )),
+    #                                              data = temp_lesdf,
+    #                                              jrrIMax = Inf,
+    #                                              weightVar = "totwgt"),
+    #                                error = function(cond) {
+    #                                  message(cond)
+    #                                  return(0)
+    #                                })
+    # if (length(temp_edsurveytable$data) != 1) {
+    #   out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_edsurveytable)))
+    #   out_temp$YVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1]
+    #   out_temp$EqVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[3]][1]
+    #   out_temp$EqVarValue <- temp_edsurveytable$data[,1]
+    #   out_temp$N <- temp_edsurveytable$data$N
+    #   out_temp$WTD_N <- temp_edsurveytable$data$WTD_N
+    #   out_temp$PCT <- temp_edsurveytable$data$PCT
+    #   out_temp$SE_PCT <- temp_edsurveytable$data$`SE(PCT)`
+    #   out_temp$MEAN <- temp_edsurveytable$data$MEAN
+    #   out_temp$SE_MEAN <- temp_edsurveytable$data$`SE(MEAN)`
+    #   out_temp$n0 <- temp_edsurveytable$n0
+    #   out_temp$nUsed <- temp_edsurveytable$nUsed
+    # } else {
+    #   out_temp <- data.frame("IDCNTRY" = cnt$country, 
+    #                          "YVar" = str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1])
+    # }
+    
+    temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0("erea ~ ", x, "_d_clicked" )),
+                                                 data = temp_lesdf,
+                                                 jrrIMax = Inf,
+                                                 weightVar = "totwgt"),
+                                   error = function(cond) {
+                                     message(cond)
+                                     return(0)
+                                   })
+    if (length(temp_lmsdf) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+      out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+      out_temp$n0 <- temp_lmsdf$n0
+      out_temp$nUsed <- temp_lmsdf$nUsed
+      out_temp$coef <- temp_lmsdf$coefmat$coef
+      out_temp$se <- temp_lmsdf$coefmat$se
+      out_temp$t <- temp_lmsdf$coefmat$t
+      out_temp$dof <- temp_lmsdf$coefmat$dof
+      out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+      out_temp$r2 <- temp_lmsdf$r.squared
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                             "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
     }
     out <- rbind.fill(out, out_temp)
   }
 }
 
 # export
-exportPath <- "/Users/Yuqi/Desktop/Files/AIR/GIT/InternationalAssessment_ProcessData/output"
-write.csv(out, file.path(exportPath,"eP16_erea_adClick_eachModule.csv"), row.names = FALSE)
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_eachModule_erea_adClick.csv")), row.names = FALSE)
 
 
-### How to (almost) replicate the interantional report
+# gap 
+# gapResults <- tryCatch( gap(variable = "erea",
+#     data = temp_lesdf,
+#     groupA = en11madz_d_clicked == "0",
+#     groupB = en11madz_d_clicked == "1",
+#     jrrIMax = Inf),
+# error = function(cond) {
+#   message(cond)
+#   return(0)
+# })
+
+### How to (almost) replicate the international report
 # ePIRLS_lesdf_cnt1_new3 <- ePIRLS_lesdf_cnt1 %>% 
 #   mutate(en11madz_d_clicked = as.factor(ifelse(is.na(en11madz), NA,
 #                                                ifelse(en11madz >= 1, 1, 0))),
@@ -236,95 +360,668 @@ write.csv(out, file.path(exportPath,"eP16_erea_adClick_eachModule.csv"), row.nam
 #        cnt1_erea_en11zadz_d_clicked$data$MEAN[2],
 #        cnt1_erea_en11tadz_d_clicked$data$MEAN[2]))
 
-### click situation for all two ads #####
-ePIRLS_lesdf_cnt1_new2 <- ePIRLS_lesdf_cnt1 %>% 
-  mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE),
-         adClickTotal = as.factor(adClickTotal)) %>% 
-  rebindAttributes(ePIRLS$datalist[[1]])
-
-class(ePIRLS_lesdf_cnt1_new2$adClickTotal)
-
-cnt1_erea_adClickTotal <- edsurveyTable(formula = erea ~ adClickTotal,
-                                    data = ePIRLS_lesdf_cnt1_new2,
-                                    jrrIMax = Inf)
-View(cnt1_erea_adClickTotal$data)
 
 
+## Time spent
+
+# out <- data.frame("IDCNTRY" = character(0),
+#                   "YVar" = character(0),
+#                   "EqVar" = character(0),
+#                   "EqVarValue" = character(0),
+#                   "N" = numeric(0),
+#                   "WTD_N" = numeric(0),
+#                   "PCT" = numeric(0),
+#                   "SE_PCT" = numeric(0),
+#                   "MEAN" = numeric(0),
+#                   "SE_MEAN" = character(0),
+#                   "n0" = integer(0),
+#                   "nUsed" = integer(0))
+
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = character(0),
+                  "pVal" = integer(0),
+                  "r2" = integer(0))
 
 
-
-
-
-###  no-click vs click for all two ads ##### 
-#(compare with the international report for sanity check)
-ePIRLS_lesdf_cnt1_new4 <- ePIRLS_lesdf_cnt1 %>% 
-  mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
-  mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
-         adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
-                                                   ifelse(adClickTotal >= 1, 1, 0))),
-         adClickTotal = as.factor(adClickTotal)) %>% 
-  rebindAttributes(ePIRLS$datalist[[1]])
-
-class(ePIRLS_lesdf_cnt1_new4$adClickTotal_d_clicked)
-
-cnt1_erea_adClickTotal_d_clicked <- edsurveyTable(formula = erea ~ adClickTotal_d_clicked,
-                                        data = ePIRLS_lesdf_cnt1_new4,
-                                        jrrIMax = Inf,
-                                        weightVar = "totwgt")
-View(cnt1_erea_adClickTotal_d_clicked$data)
-
-
-
-###  no-click vs click for all two ads - v2 ##### 
-# to calculate the dummied version of the 5 vars first, then get the percent average and the mean average, and then get the average of those average values
-#(compare with the international report for sanity check)
-ePIRLS_lesdf_cnt1_new5 <- ePIRLS_lesdf_cnt1 %>% 
-  mutate(en11madz_d = as.factor(ifelse(is.na(en11madz), NA,
-                                     ifelse(en11madz >= 1, 1, 0))),
-         en11radz_d = as.factor(ifelse(is.na(en11radz), NA,
-                                     ifelse(en11radz >= 1, 1, 0))),
-         en11badz_d = as.factor(ifelse(is.na(en11badz), NA,
-                                     ifelse(en11badz >= 1, 1, 0))),
-         en11zadz_d = as.factor(ifelse(is.na(en11zadz), NA,
-                                     ifelse(en11zadz >= 1, 1, 0))),
-         en11tadz_d = as.factor(ifelse(is.na(en11tadz), NA,
-                                     ifelse(en11tadz >= 1, 1, 0)))) %>% 
-  rebindAttributes(ePIRLS$datalist[[1]])
-
+for (cnt in ePIRLS$datalist) {
   
-cnt1_erea_en11madz_d <- edsurveyTable(formula = erea ~ en11madz_d,
-                                                  data = ePIRLS_lesdf_cnt1_new5,
-                                                  jrrIMax = Inf,
-                                                  weightVar = "totwgt")
-View(cnt1_erea_en11madz_d$data)
+  print(cnt$country)
   
-#   select(contains("adz")) %>% 
-#   View()
-# 
-# 
-# 
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(en11madz_d_clicked = as.factor(ifelse(is.na(en11madz), NA,
+                                                 ifelse(en11madz >= 1, 1, 0))),
+           en11radz_d_clicked = as.factor(ifelse(is.na(en11radz), NA,
+                                                 ifelse(en11radz >= 1, 1, 0))),
+           en11badz_d_clicked = as.factor(ifelse(is.na(en11badz), NA,
+                                                 ifelse(en11badz >= 1, 1, 0))),
+           en11zadz_d_clicked = as.factor(ifelse(is.na(en11zadz), NA,
+                                                 ifelse(en11zadz >= 1, 1, 0))),
+           en11tadz_d_clicked = as.factor(ifelse(is.na(en11tadz), NA,
+                                                 ifelse(en11tadz >= 1, 1, 0)))) %>% 
+    # seperate time_vars into _m and _s columns
+    separate(col = en11mtims , into = c("en11mtims_m", "en11mtims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11rtims , into = c("en11rtims_m", "en11rtims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11btims , into = c("en11btims_m", "en11btims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ztims , into = c("en11ztims_m", "en11ztims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ttims , into = c("en11ttims_m", "en11ttims_s"), sep = ":", convert = TRUE) %>% 
+    
+    separate(col = en11mtiml , into = c("en11mtiml_m", "en11mtiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11rtiml , into = c("en11rtiml_m", "en11rtiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11btiml , into = c("en11btiml_m", "en11btiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ztiml , into = c("en11ztiml_m", "en11ztiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ttiml , into = c("en11ttiml_m", "en11ttiml_s"), sep = ":", convert = TRUE) %>% 
+    # convert time_vars into date format and in the unit of seconds, and create the new vars
+    mutate(en11mtims_seconds = dminutes(en11mtims_m) + dseconds(en11mtims_s),
+           en11rtims_seconds = dminutes(en11rtims_m) + dseconds(en11rtims_s),
+           en11btims_seconds = dminutes(en11btims_m) + dseconds(en11btims_s),
+           en11ztims_seconds = dminutes(en11ztims_m) + dseconds(en11ztims_s),
+           en11ttims_seconds = dminutes(en11ttims_m) + dseconds(en11ttims_s),
+           
+           en11mtiml_seconds = dminutes(en11mtiml_m) + dseconds(en11mtiml_s),
+           en11rtiml_seconds = dminutes(en11rtiml_m) + dseconds(en11rtiml_s),
+           en11btiml_seconds = dminutes(en11btiml_m) + dseconds(en11btiml_s),
+           en11ztiml_seconds = dminutes(en11ztiml_m) + dseconds(en11ztiml_s),
+           en11ttiml_seconds = dminutes(en11ttiml_m) + dseconds(en11ttiml_s)) %>% 
+    # create time_vars that are between last item saved to logging out
+    mutate(en11mtimr_seconds = en11mtiml_seconds - en11mtims_seconds,
+           en11rtimr_seconds = en11rtiml_seconds - en11rtims_seconds,
+           en11btimr_seconds = en11btiml_seconds - en11btims_seconds,
+           en11ztimr_seconds = en11ztiml_seconds - en11ztims_seconds,
+           en11ttimr_seconds = en11ttiml_seconds - en11ttims_seconds) %>%
+    rebindAttributes(cnt)
+  
+  for (time_var in c(time_startlastitem_vars, time_startlogout_vars, time_lastitem_logout_vars)) {
+    print(time_var)
+    
+    # temp_edsurveytable <- tryCatch(edsurveyTable(formula = as.formula(paste0(time_var, "_seconds ~ ", str_sub(string = time_var, start = 1, end = 5), "adz_d_clicked" )),
+    #                                              data = temp_lesdf,
+    #                                              jrrIMax = Inf,
+    #                                              weightVar = "totwgt"),
+    #                                error = function(cond) {
+    #                                  message(cond)
+    #                                  return(0)
+    #                                })
+    # if (length(temp_edsurveytable) != 1) {
+    #   out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_edsurveytable)))
+    #   out_temp$YVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1]
+    #   out_temp$EqVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[3]][1]
+    #   out_temp$EqVarValue <- temp_edsurveytable$data[,1]
+    #   out_temp$N <- temp_edsurveytable$data$N
+    #   out_temp$WTD_N <- temp_edsurveytable$data$WTD_N
+    #   out_temp$PCT <- temp_edsurveytable$data$PCT
+    #   out_temp$SE_PCT <- temp_edsurveytable$data$`SE(PCT)`
+    #   out_temp$MEAN <- temp_edsurveytable$data$MEAN
+    #   out_temp$SE_MEAN <- temp_edsurveytable$data$`SE(MEAN)`
+    #   out_temp$n0 <- temp_edsurveytable$n0
+    #   out_temp$nUsed <- temp_edsurveytable$nUsed
+    # } else {
+    #   out_temp <- data.frame("IDCNTRY" = cnt$country, 
+    #                          "YVar" = str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1])
+    # }
+    
+    temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0(time_var, "_seconds ~ ", str_sub(string = time_var, start = 1, end = 5), "adz_d_clicked" )),
+                                  data = temp_lesdf,
+                                  jrrIMax = Inf,
+                                  weightVar = "totwgt"),
+                           error = function(cond) {
+                             message(cond)
+                             return(0)
+                           })
+    if (length(temp_lmsdf) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+      out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+      out_temp$n0 <- temp_lmsdf$n0
+      out_temp$nUsed <- temp_lmsdf$nUsed
+      out_temp$coef <- temp_lmsdf$coefmat$coef
+      out_temp$se <- temp_lmsdf$coefmat$se
+      out_temp$t <- temp_lmsdf$coefmat$t
+      out_temp$dof <- temp_lmsdf$coefmat$dof
+      out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+      out_temp$r2 <- temp_lmsdf$r.squared
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                             "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
+    }
+    out <- rbind.fill(out, out_temp)
+  }
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_eachModule_timeVars_adClick.csv")), row.names = FALSE)
+
+
+
+
+
+# The following code is for one cnt (and some code could be used for analyzing time_spent_vars alone and in-depth)
+# ePIRLS_lesdf_cnt1_new3 <- ePIRLS_lesdf_cnt1 %>%
+#   mutate(en11madz_d_clicked = as.factor(ifelse(is.na(en11madz), NA,
+#                                                ifelse(en11madz >= 1, 1, 0))),
+#          en11radz_d_clicked = as.factor(ifelse(is.na(en11radz), NA,
+#                                                ifelse(en11radz >= 1, 1, 0))),
+#          en11badz_d_clicked = as.factor(ifelse(is.na(en11badz), NA,
+#                                                ifelse(en11badz >= 1, 1, 0))),
+#          en11zadz_d_clicked = as.factor(ifelse(is.na(en11zadz), NA,
+#                                                ifelse(en11zadz >= 1, 1, 0))),
+#          en11tadz_d_clicked = as.factor(ifelse(is.na(en11tadz), NA,
+#                                                ifelse(en11tadz >= 1, 1, 0)))) %>% 
+#   # seperate time_vars into _m and _s columns
+#   separate(col = en11mtims , into = c("en11mtims_m", "en11mtims_s"), sep = ":", convert = TRUE) %>% 
+#   separate(col = en11rtims , into = c("en11rtims_m", "en11rtims_s"), sep = ":", convert = TRUE) %>% 
+#   separate(col = en11btims , into = c("en11btims_m", "en11btims_s"), sep = ":", convert = TRUE) %>% 
+#   separate(col = en11ztims , into = c("en11ztims_m", "en11ztims_s"), sep = ":", convert = TRUE) %>% 
+#   separate(col = en11ttims , into = c("en11ttims_m", "en11ttims_s"), sep = ":", convert = TRUE) %>% 
 #   
-#   mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
-#   mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
-#          adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
-#                                                    ifelse(adClickTotal >= 1, 1, 0))),
-#          adClickTotal = as.factor(adClickTotal)) %>% 
+#   separate(col = en11mtiml , into = c("en11mtiml_m", "en11mtiml_s"), sep = ":", convert = TRUE) %>% 
+#   separate(col = en11rtiml , into = c("en11rtiml_m", "en11rtiml_s"), sep = ":", convert = TRUE) %>% 
+#   separate(col = en11btiml , into = c("en11btiml_m", "en11btiml_s"), sep = ":", convert = TRUE) %>% 
+#   separate(col = en11ztiml , into = c("en11ztiml_m", "en11ztiml_s"), sep = ":", convert = TRUE) %>% 
+#   separate(col = en11ttiml , into = c("en11ttiml_m", "en11ttiml_s"), sep = ":", convert = TRUE) %>% 
+#   # convert time_vars into date format and in the unit of seconds, and create the new vars
+#   mutate(en11mtims_seconds = dminutes(en11mtims_m) + dseconds(en11mtims_s),
+#          en11rtims_seconds = dminutes(en11rtims_m) + dseconds(en11rtims_s),
+#          en11btims_seconds = dminutes(en11btims_m) + dseconds(en11btims_s),
+#          en11ztims_seconds = dminutes(en11ztims_m) + dseconds(en11ztims_s),
+#          en11ttims_seconds = dminutes(en11ttims_m) + dseconds(en11ttims_s),
+#          
+#          en11mtiml_seconds = dminutes(en11mtiml_m) + dseconds(en11mtiml_s),
+#          en11rtiml_seconds = dminutes(en11rtiml_m) + dseconds(en11rtiml_s),
+#          en11btiml_seconds = dminutes(en11btiml_m) + dseconds(en11btiml_s),
+#          en11ztiml_seconds = dminutes(en11ztiml_m) + dseconds(en11ztiml_s),
+#          en11ttiml_seconds = dminutes(en11ttiml_m) + dseconds(en11ttiml_s)) %>% 
+#   # create time_vars that are between last item saved to logging out
+#   mutate(en11mtimr_seconds = en11mtiml_seconds - en11mtims_seconds,
+#          en11rtimr_seconds = en11rtiml_seconds - en11rtims_seconds,
+#          en11btimr_seconds = en11btiml_seconds - en11btims_seconds,
+#          en11ztimr_seconds = en11ztiml_seconds - en11ztims_seconds,
+#          en11ttimr_seconds = en11ttiml_seconds - en11ttims_seconds) %>%
 #   rebindAttributes(ePIRLS$datalist[[1]])
 # 
-# class(ePIRLS_lesdf_cnt1_new4$adClickTotal_d_clicked)
+# 
+# # unweighted
+# summary(ePIRLS_lesdf_cnt1_new3$en11mtimr_seconds)
+# 
+# # with replicate weights
+# cnt1_en11mtimr_seconds <- edsurveyTable(formula = en11mtimr_seconds ~ 1,
+#                                               data = ePIRLS_lesdf_cnt1_new3,
+#                                               jrrIMax = Inf)
+# # time by ad click dummy var
+# cnt1_en11mtimr_seconds_en11radz_d_clicked <- edsurveyTable(formula = en11mtimr_seconds ~ en11radz_d_clicked,
+#                                         data = ePIRLS_lesdf_cnt1_new3,
+#                                         jrrIMax = Inf)
+
+
+## Last Item reached
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = character(0),
+                  "pVal" = integer(0),
+                  "r2" = integer(0))
+
+
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(en11madz_d_clicked = as.factor(ifelse(is.na(en11madz), NA,
+                                                 ifelse(en11madz >= 1, 1, 0))),
+           en11radz_d_clicked = as.factor(ifelse(is.na(en11radz), NA,
+                                                 ifelse(en11radz >= 1, 1, 0))),
+           en11badz_d_clicked = as.factor(ifelse(is.na(en11badz), NA,
+                                                 ifelse(en11badz >= 1, 1, 0))),
+           en11zadz_d_clicked = as.factor(ifelse(is.na(en11zadz), NA,
+                                                 ifelse(en11zadz >= 1, 1, 0))),
+           en11tadz_d_clicked = as.factor(ifelse(is.na(en11tadz), NA,
+                                                 ifelse(en11tadz >= 1, 1, 0)))) %>% 
+    rebindAttributes(cnt)
+  
+  for (lastItemReached_var in lastItemReached_vars) {
+    print(lastItemReached_var)
+    
+    
+    temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0(lastItemReached_var, " ~ ", str_sub(string = lastItemReached_var, start = 1, end = 5), "adz_d_clicked" )),
+                                  data = temp_lesdf,
+                                  jrrIMax = Inf,
+                                  weightVar = "totwgt"),
+                           error = function(cond) {
+                             message(cond)
+                             return(0)
+                           })
+    if (length(temp_lmsdf) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+      out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+      out_temp$n0 <- temp_lmsdf$n0
+      out_temp$nUsed <- temp_lmsdf$nUsed
+      out_temp$coef <- temp_lmsdf$coefmat$coef
+      out_temp$se <- temp_lmsdf$coefmat$se
+      out_temp$t <- temp_lmsdf$coefmat$t
+      out_temp$dof <- temp_lmsdf$coefmat$dof
+      out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+      out_temp$r2 <- temp_lmsdf$r.squared
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                             "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
+    }
+    out <- rbind.fill(out, out_temp)
+  }
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_eachModule_lastItemReachedVars_adClick.csv")), row.names = FALSE)
+
+
+
+### 3. click situation for all two ads #####
+out <- data.frame("IDCNTRY" = character(0),
+                  "Var" = character(0),
+                  "Min" = character(0),
+                  "FirstQ" = character(0),
+                  "Median" = numeric(0),
+                  "Mean" = numeric(0),
+                  "ThirdQ" = numeric(0),
+                  "Max" = numeric(0),
+                  "NACount" = numeric(0),
+                  "n" = numeric(0))
+
+for (cnt in ePIRLS$datalist) {
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>% 
+    rebindAttributes(cnt)
+  
+    summaryTable <- summary(temp_lesdf[,"adClickTotal"])
+    
+    out_temp <- data.frame("IDCNTRY" = cnt$country)
+    out_temp$Var <- "adClickTotal"
+    out_temp$Min <- summaryTable[1]
+    out_temp$FirstQ <- summaryTable[2]
+    out_temp$Median <- summaryTable[3]
+    out_temp$Mean <- summaryTable[4]
+    out_temp$ThirdQ <- summaryTable[5]
+    out_temp$Max <- summaryTable[6]
+    out_temp$NACount <- summaryTable[7]
+    out_temp$n <- nrow(temp_lesdf)
+    
+    out <- rbind.fill(out, out_temp)
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_adClickSummaryTable.csv")), row.names = FALSE)
+
+
+###  4. no-click vs click for all two ads ##### 
+## PCT and Score
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "EqVarValue" = character(0),
+                  "N" = numeric(0),
+                  "WTD_N" = numeric(0),
+                  "PCT" = numeric(0),
+                  "SE_PCT" = numeric(0),
+                  "MEAN" = numeric(0),
+                  "SE_MEAN" = character(0),
+                  "n0" = integer(0),
+                  "nUsed" = integer(0))
+
+for (cnt in ePIRLS$datalist) {
+  print(cnt$country)
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>% 
+    rebindAttributes(cnt)
+    
+    temp_edsurveytable <- tryCatch(edsurveyTable(formula = as.formula(paste0("erea ~ adClickTotal_d_clicked")),
+                                                 data = temp_lesdf,
+                                                 jrrIMax = Inf,
+                                                 weightVar = "totwgt"),
+                                   error = function(cond) {
+                                     message(cond)
+                                     return(0)
+                                   })
+    if (length(temp_edsurveytable) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_edsurveytable$data)))
+      out_temp$YVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[3]][1]
+      out_temp$EqVarValue <- temp_edsurveytable$data[,1]
+      out_temp$N <- temp_edsurveytable$data$N
+      out_temp$WTD_N <- temp_edsurveytable$data$WTD_N
+      out_temp$PCT <- temp_edsurveytable$data$PCT
+      out_temp$SE_PCT <- temp_edsurveytable$data$`SE(PCT)`
+      out_temp$MEAN <- temp_edsurveytable$data$MEAN
+      out_temp$SE_MEAN <- temp_edsurveytable$data$`SE(MEAN)`
+      out_temp$n0 <- temp_edsurveytable$n0
+      out_temp$nUsed <- temp_edsurveytable$nUsed
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country,
+                             "YVar" = str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1])
+    }
+    
+    out <- rbind.fill(out, out_temp)
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_erea_adClickTotal_pct.csv")), row.names = FALSE)
+
+
+## Score
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = character(0),
+                  "pVal" = integer(0),
+                  "r2" = integer(0))
+
+
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>% 
+    rebindAttributes(cnt)
+    
+    temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0("erea ~ adClickTotal_d_clicked")),
+                                  data = temp_lesdf,
+                                  jrrIMax = Inf,
+                                  weightVar = "totwgt"),
+                           error = function(cond) {
+                             message(cond)
+                             return(0)
+                           })
+    if (length(temp_lmsdf) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+      out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+      out_temp$n0 <- temp_lmsdf$n0
+      out_temp$nUsed <- temp_lmsdf$nUsed
+      out_temp$coef <- temp_lmsdf$coefmat$coef
+      out_temp$se <- temp_lmsdf$coefmat$se
+      out_temp$t <- temp_lmsdf$coefmat$t
+      out_temp$dof <- temp_lmsdf$coefmat$dof
+      out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+      out_temp$r2 <- temp_lmsdf$r.squared
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                             "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
+    }
+    out <- rbind.fill(out, out_temp)
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_erea_adClickTotal.csv")), row.names = FALSE)
+
+
+## Time spent
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = character(0),
+                  "pVal" = integer(0),
+                  "r2" = integer(0))
+
+
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>%
+    # seperate time_vars into _m and _s columns
+    separate(col = en11mtims , into = c("en11mtims_m", "en11mtims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11rtims , into = c("en11rtims_m", "en11rtims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11btims , into = c("en11btims_m", "en11btims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ztims , into = c("en11ztims_m", "en11ztims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ttims , into = c("en11ttims_m", "en11ttims_s"), sep = ":", convert = TRUE) %>% 
+    
+    separate(col = en11mtiml , into = c("en11mtiml_m", "en11mtiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11rtiml , into = c("en11rtiml_m", "en11rtiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11btiml , into = c("en11btiml_m", "en11btiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ztiml , into = c("en11ztiml_m", "en11ztiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ttiml , into = c("en11ttiml_m", "en11ttiml_s"), sep = ":", convert = TRUE) %>% 
+    # convert time_vars into date format and in the unit of seconds, and create the new vars
+    mutate(en11mtims_seconds = dminutes(en11mtims_m) + dseconds(en11mtims_s),
+           en11rtims_seconds = dminutes(en11rtims_m) + dseconds(en11rtims_s),
+           en11btims_seconds = dminutes(en11btims_m) + dseconds(en11btims_s),
+           en11ztims_seconds = dminutes(en11ztims_m) + dseconds(en11ztims_s),
+           en11ttims_seconds = dminutes(en11ttims_m) + dseconds(en11ttims_s),
+           
+           en11mtiml_seconds = dminutes(en11mtiml_m) + dseconds(en11mtiml_s),
+           en11rtiml_seconds = dminutes(en11rtiml_m) + dseconds(en11rtiml_s),
+           en11btiml_seconds = dminutes(en11btiml_m) + dseconds(en11btiml_s),
+           en11ztiml_seconds = dminutes(en11ztiml_m) + dseconds(en11ztiml_s),
+           en11ttiml_seconds = dminutes(en11ttiml_m) + dseconds(en11ttiml_s)) %>% 
+    # create time_vars that are between last item saved to logging out
+    mutate(en11mtimr_seconds = en11mtiml_seconds - en11mtims_seconds,
+           en11rtimr_seconds = en11rtiml_seconds - en11rtims_seconds,
+           en11btimr_seconds = en11btiml_seconds - en11btims_seconds,
+           en11ztimr_seconds = en11ztiml_seconds - en11ztims_seconds,
+           en11ttimr_seconds = en11ttiml_seconds - en11ttims_seconds) %>%
+    
+    # create the aggregated versions of the time_vars
+    mutate(en11Totaltims_seconds = select(., en11mtims_seconds, en11rtims_seconds, en11btims_seconds, en11ztims_seconds, en11ttims_seconds) %>% rowSums(na.rm = TRUE),
+           en11Totaltiml_seconds = select(., en11mtiml_seconds, en11rtiml_seconds, en11btiml_seconds, en11ztiml_seconds, en11ttiml_seconds) %>% rowSums(na.rm = TRUE),
+           en11Totaltimr_seconds = select(., en11mtimr_seconds, en11rtimr_seconds, en11btimr_seconds, en11ztimr_seconds, en11ttimr_seconds) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(en11Totaltims_seconds = ifelse( (is.na(en11mtims_seconds) & is.na(en11rtims_seconds) & is.na(en11btims_seconds) & is.na(en11ztims_seconds) & is.na(en11ttims_seconds)), NA, en11Totaltims_seconds ),
+           en11Totaltiml_seconds = ifelse( (is.na(en11mtiml_seconds) & is.na(en11rtiml_seconds) & is.na(en11btiml_seconds) & is.na(en11ztiml_seconds) & is.na(en11ttiml_seconds)), NA, en11Totaltiml_seconds ),
+           en11Totaltimr_seconds = ifelse( (is.na(en11mtimr_seconds) & is.na(en11rtimr_seconds) & is.na(en11btimr_seconds) & is.na(en11ztimr_seconds) & is.na(en11ttimr_seconds)), NA, en11Totaltimr_seconds )) %>% 
+    
+    rebindAttributes(cnt)
+  
+  for (time_var in c("en11Totaltims_seconds", "en11Totaltiml_seconds", "en11Totaltimr_seconds")) {
+    print(time_var)
+    
+    temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0(time_var, " ~ adClickTotal_d_clicked")),
+                                  data = temp_lesdf,
+                                  jrrIMax = Inf,
+                                  weightVar = "totwgt"),
+                             error = function(cond) {
+                             message(cond)
+                             return(0)
+                           })
+    if (length(temp_lmsdf) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+      out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+      out_temp$n0 <- temp_lmsdf$n0
+      out_temp$nUsed <- temp_lmsdf$nUsed
+      out_temp$coef <- temp_lmsdf$coefmat$coef
+      out_temp$se <- temp_lmsdf$coefmat$se
+      out_temp$t <- temp_lmsdf$coefmat$t
+      out_temp$dof <- temp_lmsdf$coefmat$dof
+      out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+      out_temp$r2 <- temp_lmsdf$r.squared
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                             "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
+    }
+    out <- rbind.fill(out, out_temp)
+  }
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_timeVars_adClickTotal.csv")), row.names = FALSE)
+
+## Last item reached
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = character(0),
+                  "pVal" = integer(0),
+                  "r2" = integer(0))
+
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>%
+    
+    
+    # create the aggregated versions of the lastItemReached_vars
+    separate(col = rotation, into = c("passage", "module1", "and", "module2"), sep = " ", remove = FALSE) %>% 
+    mutate(
+      module1_max = ifelse(module1 == 1, 20, 
+                           ifelse(module1 == 2, 16, 
+                                  ifelse(module1 == 3, 17,
+                                         ifelse(module1 == 4, 20, 18)))),
+      module2_max = ifelse(module2 == 1, 20, 
+                           ifelse(module2 == 2, 16, 
+                                  ifelse(module2 == 3, 17,
+                                         ifelse(module2 == 4, 20, 18)))),
+      modules_max = module1_max + module2_max) %>% 
+    mutate(ItemReached_count = select(., en11mitem, en11ritem, en11bitem, en11zitem, en11titem) %>% rowSums(na.rm = TRUE)) %>% ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(ItemReached_count = ifelse( (is.na(en11mitem) & is.na(en11ritem) & is.na(en11bitem) & is.na(en11bitem) & is.na(en11zitem)), NA, ItemReached_count)) %>% 
+    mutate(
+      lastItemReached_d = as.factor(ifelse(is.na(ItemReached_count), NA,
+                                            ifelse(ItemReached_count == modules_max, 1, 0))),
+      ItemReached_count = as.factor(ItemReached_count)
+    ) %>% 
+    rebindAttributes(cnt)
+  
+  for (var in c("ItemReached_count", "lastItemReached_d")) {
+    print(var)
+    
+    temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0(var, " ~ adClickTotal_d_clicked")),
+                                  data = temp_lesdf,
+                                  jrrIMax = Inf,
+                                  weightVar = "totwgt"),
+                           error = function(cond) {
+                             message(cond)
+                             return(0)
+                           })
+    if (length(temp_lmsdf) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+      out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+      out_temp$n0 <- temp_lmsdf$n0
+      out_temp$nUsed <- temp_lmsdf$nUsed
+      out_temp$coef <- temp_lmsdf$coefmat$coef
+      out_temp$se <- temp_lmsdf$coefmat$se
+      out_temp$t <- temp_lmsdf$coefmat$t
+      out_temp$dof <- temp_lmsdf$coefmat$dof
+      out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+      out_temp$r2 <- temp_lmsdf$r.squared
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                             "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
+    }
+    out <- rbind.fill(out, out_temp)
+  }
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_lastItemReachedVars_adClickTotal.csv")), row.names = FALSE)
+
+
+###### Stop Here ######
 
 
 
 
 
 
-# no-click vs click on all ad? - percent and score? 
 
-# among students who click at least one ad, how many (or percent) of them click on all ad?
 
-# click on just one ad overall vs click on more than one ad? - percent and score? 
 
-# predicting score, using no-click vs click, and controlling for stuff?
+
+
+
+
+
+
 
 
 # score
@@ -345,92 +1042,7 @@ View(erea_rotation$data)
 
 
 
-### Loop through all countries #####
 
-countryList <- c("aad", "adu", "are", "can", "dnk",	"geo", "irl", "isr", "ita", "nor", "prt", "sgp", "svn", "swe", "twn", "usa")
-
-countryList <- c("aad", "adu")
-
-ePIRLS <- read_ePIRLS("/Users/Yuqi/Desktop/Files/AIR/Conference/Conference 2020/ePIRLS/data/eP16_International/eP16_SPSSData/", countries = countryList)
-
-
-lastItemReached_vars <- c("en11mitem", "en11ritem", "en11bitem", "en11zitem", "en11titem")
-ad_vars <- c("en11madz", "en11radz", "en11badz", "en11zadz", "en11tadz")
-other_vars <- c("erea", "idcntry","idstud", "totwgt", "en11mtiml",  "en11mtims", "rotation", "itsex")
-allvars <- c(ad_vars, other_vars, lastItemReached_vars)
-
-### erea ~ adclickTotal_d_clicked ###
-
-# create an empty data frame for looping
-out <- data.frame("IDCNTRY" = character(0),
-                  "YVar" = character(0),
-                  "EqVar" = character(0),
-                  "EqVarValue" = character(0),
-                  "N" = numeric(0),
-                  "WTD_N" = numeric(0),
-                  "PCT" = numeric(0),
-                  "SE_PCT" = numeric(0),
-                  "MEAN" = numeric(0),
-                  "SE_MEAN" = character(0),
-                  "n0" = integer(0),
-                  "nUsed" = integer(0))
-
-
-for (cnt in ePIRLS$datalist) {
-  
-  print(cnt$country)
-  
-  temp_lesdf <- getData(data = cnt,
-                               varnames = allvars,
-                               omittedLevels = FALSE, addAttributes = TRUE)
-  
-  print(nrow(temp_lesdf))
-  
-  
-  temp_lesdf <- temp_lesdf %>% 
-    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>% 
-    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
-           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
-                                                     ifelse(adClickTotal >= 1, 1, 0))),
-           adClickTotal = as.factor(adClickTotal)) %>% 
-    rebindAttributes(cnt)
-
-  temp_edsurveytable <- tryCatch(edsurveyTable(formula = erea~adClickTotal_d_clicked,
-                                                    data = temp_lesdf,
-                                                    jrrIMax = Inf,
-                                                    weightVar = "totwgt"),
-                                          error = function(cond) {
-                                            message(cond)
-                                            return(0)
-                                          })
-  if (length(temp_edsurveytable$data) != 1) {
-    out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_edsurveytable$data)))
-    out_temp$YVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1]
-    out_temp$EqVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[3]][1]
-    out_temp$EqVarValue <- temp_edsurveytable$data[,1]
-    out_temp$N <- temp_edsurveytable$data$N
-    out_temp$WTD_N <- temp_edsurveytable$data$WTD_N
-    out_temp$PCT <- temp_edsurveytable$data$PCT
-    out_temp$SE_PCT <- temp_edsurveytable$data$`SE(PCT)`
-    out_temp$MEAN <- temp_edsurveytable$data$MEAN
-    out_temp$SE_MEAN <- temp_edsurveytable$data$`SE(MEAN)`
-    out_temp$n0 <- temp_edsurveytable$n0
-    out_temp$nUsed <- temp_edsurveytable$nUsed
-  } else {
-    out_temp <- data.frame("IDCNTRY" = cnt$country, 
-                           "YVar" = str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1])
-  }
-  out <- rbind.fill(out, out_temp)
-}
-
-
-# export
-exportPath <- "/Users/Yuqi/Desktop/Files/AIR/Conference/Conference 2020/ePIRLS/output/edsurveyTable"
-write.csv(out, file.path(exportPath,"eP15_erea_adclickTotal_d_clicked.csv"), row.names = FALSE)
-
-
-
-### erea ~ adclickTotal_d_clicked ###
 
   
   
