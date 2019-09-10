@@ -1327,13 +1327,418 @@ for (cnt in ePIRLS$datalist) {
 write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_adClickTotal_itsex_pct_gap.csv")), row.names = FALSE)
 
 
+### 5. ad click situations#####
+## students are given two modules, so their ad click situations should be one of c(NA_NA, NA_0, 0_NA, NA_1, 1_NA, 1_0, 0_1, 1_1, 0_0). Below code finds out about the score and pct of each situations
+# could answer: what's the pct of students who click on ads in both modules?(1_1 situations) (so they know the ad doesn’t do anything but decide to click on them anyway)
+
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "EqVarValue" = character(0),
+                  "N" = numeric(0),
+                  "WTD_N" = numeric(0),
+                  "PCT" = numeric(0),
+                  "SE_PCT" = numeric(0),
+                  "MEAN" = numeric(0),
+                  "SE_MEAN" = numeric(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0))
+
+for (cnt in ePIRLS$datalist) {
+  print(cnt$country)
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  temp_lesdf <- temp_lesdf %>% 
+    # create adClickTotal and adClickTotal_d_clicked
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>% 
+    
+    # create dummy version for each ad_vars
+    mutate(en11madz_d_clicked = ifelse(is.na(en11madz), NA,
+                                                 ifelse(en11madz >= 1, 1, 0)),
+           en11radz_d_clicked = ifelse(is.na(en11radz), NA,
+                                                 ifelse(en11radz >= 1, 1, 0)),
+           en11badz_d_clicked = ifelse(is.na(en11badz), NA,
+                                                 ifelse(en11badz >= 1, 1, 0)),
+           en11zadz_d_clicked = ifelse(is.na(en11zadz), NA,
+                                                 ifelse(en11zadz >= 1, 1, 0)),
+           en11tadz_d_clicked = ifelse(is.na(en11tadz), NA,
+                                                 ifelse(en11tadz >= 1, 1, 0))) %>% 
+    
+    # create number of modules taken var (levels should be either 0, 1, 2)
+    mutate(n_na_modules = is.na(en11madz) + is.na(en11radz) + is.na(en11badz) + is.na(en11zadz) + is.na(en11tadz),
+           n_modules_taken = 5 - n_na_modules) %>% 
+    
+    # create rotation var
+    separate(col = rotation, into = c("passage", "module1", "and", "module2"), sep = " ", remove = FALSE) %>% 
+    mutate(
+      module1_adVar = ifelse(module1 == 1, "en11madz", 
+                           ifelse(module1 == 2, "en11radz", 
+                                  ifelse(module1 == 3, "en11badz",
+                                         ifelse(module1 == 4, "en11zadz", "en11tadz")))),
+      module2_adVar = ifelse(module2 == 1, "en11madz", 
+                             ifelse(module2 == 2, "en11radz", 
+                                    ifelse(module2 == 3, "en11badz",
+                                           ifelse(module2 == 4, "en11zadz", "en11tadz"))))) %>% 
+    rebindAttributes(cnt)
+  
+  
+    # create ad click situations that covers all scenarios
+    # i couldn't figure out a vectorized way to do it >_<, for now, will turn to a for loop
+  temp_lesdf$adClickSituation <- NA
+for (i in 1:nrow(temp_lesdf)){
+  temp_lesdf[i, "adClickSituation"] <- paste0( as.character(temp_lesdf[i, paste0(temp_lesdf$module1_adVar[i], "_d_clicked")])  ,
+                                     "_",
+                                     as.character(temp_lesdf[i, paste0(temp_lesdf$module2_adVar[i], "_d_clicked")]))
+}
+  
+  temp_lesdf$adClickSituation <- as.factor(temp_lesdf$adClickSituation)
+  
+  # create temp_edsurveytable
+  temp_edsurveytable <- tryCatch(edsurveyTable(formula = as.formula(paste0("erea ~ adClickSituation")),
+                                               data = temp_lesdf,
+                                               jrrIMax = Inf,
+                                               weightVar = "totwgt"),
+                                 error = function(cond) {
+                                   message(cond)
+                                   return(0)
+                                 })
+  if (length(temp_edsurveytable) != 1) {
+    out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_edsurveytable$data)))
+    out_temp$YVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1]
+    out_temp$EqVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[3]][1]
+    out_temp$EqVarValue <- temp_edsurveytable$data[,1]
+    out_temp$N <- temp_edsurveytable$data$N
+    out_temp$WTD_N <- temp_edsurveytable$data$WTD_N
+    out_temp$PCT <- temp_edsurveytable$data$PCT
+    out_temp$SE_PCT <- temp_edsurveytable$data$`SE(PCT)`
+    out_temp$MEAN <- temp_edsurveytable$data$MEAN
+    out_temp$SE_MEAN <- temp_edsurveytable$data$`SE(MEAN)`
+    out_temp$n0 <- temp_edsurveytable$n0
+    out_temp$nUsed <- temp_edsurveytable$nUsed
+  } else {
+    out_temp <- data.frame("IDCNTRY" = cnt$country,
+                           "YVar" = str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1])
+  }
+  
+  out <- rbind.fill(out, out_temp)
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_erea_adClickSituation_pct.csv")), row.names = FALSE)
+
+
+
+
+## create adClickTotal_d_clicked_v2 that has 4 levels (NA, 0 click, 1 click, more than 1 click)
+## to compare students who who click on ad only once with students who click on ads more than once
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "EqVarValue" = character(0),
+                  "N" = numeric(0),
+                  "WTD_N" = numeric(0),
+                  "PCT" = numeric(0),
+                  "SE_PCT" = numeric(0),
+                  "MEAN" = numeric(0),
+                  "SE_MEAN" = numeric(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0))
+
+for (cnt in ePIRLS$datalist) {
+  print(cnt$country)
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                    ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal_d_clicked_v2 = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal == 0, "0 click",
+                                                            ifelse(adClickTotal == 1, "1 click", "more than 1 click")))),
+           adClickTotal = as.factor(adClickTotal)) %>% 
+    rebindAttributes(cnt)
+  
+  temp_edsurveytable <- tryCatch(edsurveyTable(formula = as.formula(paste0("erea ~ adClickTotal_d_clicked_v2")),
+                                               data = temp_lesdf,
+                                               jrrIMax = Inf,
+                                               weightVar = "totwgt"),
+                                 error = function(cond) {
+                                   message(cond)
+                                   return(0)
+                                 })
+  if (length(temp_edsurveytable) != 1) {
+    out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_edsurveytable$data)))
+    out_temp$YVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1]
+    out_temp$EqVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[3]][1]
+    out_temp$EqVarValue <- temp_edsurveytable$data[,1]
+    out_temp$N <- temp_edsurveytable$data$N
+    out_temp$WTD_N <- temp_edsurveytable$data$WTD_N
+    out_temp$PCT <- temp_edsurveytable$data$PCT
+    out_temp$SE_PCT <- temp_edsurveytable$data$`SE(PCT)`
+    out_temp$MEAN <- temp_edsurveytable$data$MEAN
+    out_temp$SE_MEAN <- temp_edsurveytable$data$`SE(MEAN)`
+    out_temp$n0 <- temp_edsurveytable$n0
+    out_temp$nUsed <- temp_edsurveytable$nUsed
+  } else {
+    out_temp <- data.frame("IDCNTRY" = cnt$country,
+                           "YVar" = str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1])
+  }
+  
+  out <- rbind.fill(out, out_temp)
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_erea_adClickTotalv2_pct.csv")), row.names = FALSE)
+
+
+
 ###### Stop Here ######
 
 
 
+## 6. score by time spent#####
+# get the review time, categorize it into two 50% groups, see students' score by review/not review the
+
+## Time spent - first half vs later half
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = numeric(0),
+                  "pVal" = numeric(0),
+                  "r2" = numeric(0))
 
 
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>%
+    # seperate time_vars into _m and _s columns
+    separate(col = en11mtims , into = c("en11mtims_m", "en11mtims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11rtims , into = c("en11rtims_m", "en11rtims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11btims , into = c("en11btims_m", "en11btims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ztims , into = c("en11ztims_m", "en11ztims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ttims , into = c("en11ttims_m", "en11ttims_s"), sep = ":", convert = TRUE) %>% 
+    
+    separate(col = en11mtiml , into = c("en11mtiml_m", "en11mtiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11rtiml , into = c("en11rtiml_m", "en11rtiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11btiml , into = c("en11btiml_m", "en11btiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ztiml , into = c("en11ztiml_m", "en11ztiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ttiml , into = c("en11ttiml_m", "en11ttiml_s"), sep = ":", convert = TRUE) %>% 
+    # convert time_vars into date format and in the unit of seconds, and create the new vars
+    mutate(en11mtims_seconds = dminutes(en11mtims_m) + dseconds(en11mtims_s),
+           en11rtims_seconds = dminutes(en11rtims_m) + dseconds(en11rtims_s),
+           en11btims_seconds = dminutes(en11btims_m) + dseconds(en11btims_s),
+           en11ztims_seconds = dminutes(en11ztims_m) + dseconds(en11ztims_s),
+           en11ttims_seconds = dminutes(en11ttims_m) + dseconds(en11ttims_s),
+           
+           en11mtiml_seconds = dminutes(en11mtiml_m) + dseconds(en11mtiml_s),
+           en11rtiml_seconds = dminutes(en11rtiml_m) + dseconds(en11rtiml_s),
+           en11btiml_seconds = dminutes(en11btiml_m) + dseconds(en11btiml_s),
+           en11ztiml_seconds = dminutes(en11ztiml_m) + dseconds(en11ztiml_s),
+           en11ttiml_seconds = dminutes(en11ttiml_m) + dseconds(en11ttiml_s)) %>% 
+    # create time_vars that are between last item saved to logging out
+    mutate(en11mtimr_seconds = en11mtiml_seconds - en11mtims_seconds,
+           en11rtimr_seconds = en11rtiml_seconds - en11rtims_seconds,
+           en11btimr_seconds = en11btiml_seconds - en11btims_seconds,
+           en11ztimr_seconds = en11ztiml_seconds - en11ztims_seconds,
+           en11ttimr_seconds = en11ttiml_seconds - en11ttims_seconds) %>%
+    
+    # create the aggregated versions of the time_vars
+    mutate(en11Totaltims_seconds = select(., en11mtims_seconds, en11rtims_seconds, en11btims_seconds, en11ztims_seconds, en11ttims_seconds) %>% rowSums(na.rm = TRUE),
+           en11Totaltiml_seconds = select(., en11mtiml_seconds, en11rtiml_seconds, en11btiml_seconds, en11ztiml_seconds, en11ttiml_seconds) %>% rowSums(na.rm = TRUE),
+           en11Totaltimr_seconds = select(., en11mtimr_seconds, en11rtimr_seconds, en11btimr_seconds, en11ztimr_seconds, en11ttimr_seconds) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(en11Totaltims_seconds = ifelse( (is.na(en11mtims_seconds) & is.na(en11rtims_seconds) & is.na(en11btims_seconds) & is.na(en11ztims_seconds) & is.na(en11ttims_seconds)), NA, en11Totaltims_seconds ),
+           en11Totaltiml_seconds = ifelse( (is.na(en11mtiml_seconds) & is.na(en11rtiml_seconds) & is.na(en11btiml_seconds) & is.na(en11ztiml_seconds) & is.na(en11ttiml_seconds)), NA, en11Totaltiml_seconds ),
+           en11Totaltimr_seconds = ifelse( (is.na(en11mtimr_seconds) & is.na(en11rtimr_seconds) & is.na(en11btimr_seconds) & is.na(en11ztimr_seconds) & is.na(en11ttimr_seconds)), NA, en11Totaltimr_seconds )) %>% 
+    
+    ## create dummy versions of the aggregated time vars, into those who spent more than median time, and those who spent less than median time
+    mutate(en11Totaltims_seconds_median = median(en11Totaltims_seconds, na.rm = TRUE),
+           en11Totaltims_seconds_quickhalf = as.factor(ifelse(en11Totaltims_seconds < en11Totaltims_seconds_median, 1, 0)),
+           en11Totaltiml_seconds_median = median(en11Totaltiml_seconds, na.rm = TRUE),
+           en11Totaltiml_seconds_quickhalf = as.factor(ifelse(en11Totaltiml_seconds < en11Totaltiml_seconds_median, 1, 0)),
+           en11Totaltimr_seconds_median = median(en11Totaltimr_seconds, na.rm = TRUE),
+           en11Totaltimr_seconds_quickhalf = as.factor(ifelse(en11Totaltimr_seconds < en11Totaltimr_seconds_median, 1, 0))) %>% 
+    
+    rebindAttributes(cnt)
+  
+  for (time_var in c("en11Totaltims_seconds_quickhalf", "en11Totaltiml_seconds_quickhalf", "en11Totaltimr_seconds_quickhalf")) {
+    print(time_var)
+    
+    temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0("erea ~ ", time_var)),
+                                  data = temp_lesdf,
+                                  jrrIMax = Inf,
+                                  weightVar = "totwgt"),
+                           error = function(cond) {
+                             message(cond)
+                             return(0)
+                           })
+    if (length(temp_lmsdf) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+      out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+      out_temp$n0 <- temp_lmsdf$n0
+      out_temp$nUsed <- temp_lmsdf$nUsed
+      out_temp$coef <- temp_lmsdf$coefmat$coef
+      out_temp$se <- temp_lmsdf$coefmat$se
+      out_temp$t <- temp_lmsdf$coefmat$t
+      out_temp$dof <- temp_lmsdf$coefmat$dof
+      out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+      out_temp$r2 <- temp_lmsdf$r.squared
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                             "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
+    }
+    out <- rbind.fill(out, out_temp)
+  }
+}
 
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_erea_timeQuickHalfVars.csv")), row.names = FALSE)
+
+
+## Time spent - first quartile vs forth quartile
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = numeric(0),
+                  "pVal" = numeric(0),
+                  "r2" = numeric(0))
+
+
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>%
+    # seperate time_vars into _m and _s columns
+    separate(col = en11mtims , into = c("en11mtims_m", "en11mtims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11rtims , into = c("en11rtims_m", "en11rtims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11btims , into = c("en11btims_m", "en11btims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ztims , into = c("en11ztims_m", "en11ztims_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ttims , into = c("en11ttims_m", "en11ttims_s"), sep = ":", convert = TRUE) %>% 
+    
+    separate(col = en11mtiml , into = c("en11mtiml_m", "en11mtiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11rtiml , into = c("en11rtiml_m", "en11rtiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11btiml , into = c("en11btiml_m", "en11btiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ztiml , into = c("en11ztiml_m", "en11ztiml_s"), sep = ":", convert = TRUE) %>% 
+    separate(col = en11ttiml , into = c("en11ttiml_m", "en11ttiml_s"), sep = ":", convert = TRUE) %>% 
+    # convert time_vars into date format and in the unit of seconds, and create the new vars
+    mutate(en11mtims_seconds = dminutes(en11mtims_m) + dseconds(en11mtims_s),
+           en11rtims_seconds = dminutes(en11rtims_m) + dseconds(en11rtims_s),
+           en11btims_seconds = dminutes(en11btims_m) + dseconds(en11btims_s),
+           en11ztims_seconds = dminutes(en11ztims_m) + dseconds(en11ztims_s),
+           en11ttims_seconds = dminutes(en11ttims_m) + dseconds(en11ttims_s),
+           
+           en11mtiml_seconds = dminutes(en11mtiml_m) + dseconds(en11mtiml_s),
+           en11rtiml_seconds = dminutes(en11rtiml_m) + dseconds(en11rtiml_s),
+           en11btiml_seconds = dminutes(en11btiml_m) + dseconds(en11btiml_s),
+           en11ztiml_seconds = dminutes(en11ztiml_m) + dseconds(en11ztiml_s),
+           en11ttiml_seconds = dminutes(en11ttiml_m) + dseconds(en11ttiml_s)) %>% 
+    # create time_vars that are between last item saved to logging out
+    mutate(en11mtimr_seconds = en11mtiml_seconds - en11mtims_seconds,
+           en11rtimr_seconds = en11rtiml_seconds - en11rtims_seconds,
+           en11btimr_seconds = en11btiml_seconds - en11btims_seconds,
+           en11ztimr_seconds = en11ztiml_seconds - en11ztims_seconds,
+           en11ttimr_seconds = en11ttiml_seconds - en11ttims_seconds) %>%
+    
+    # create the aggregated versions of the time_vars
+    mutate(en11Totaltims_seconds = select(., en11mtims_seconds, en11rtims_seconds, en11btims_seconds, en11ztims_seconds, en11ttims_seconds) %>% rowSums(na.rm = TRUE),
+           en11Totaltiml_seconds = select(., en11mtiml_seconds, en11rtiml_seconds, en11btiml_seconds, en11ztiml_seconds, en11ttiml_seconds) %>% rowSums(na.rm = TRUE),
+           en11Totaltimr_seconds = select(., en11mtimr_seconds, en11rtimr_seconds, en11btimr_seconds, en11ztimr_seconds, en11ttimr_seconds) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(en11Totaltims_seconds = ifelse( (is.na(en11mtims_seconds) & is.na(en11rtims_seconds) & is.na(en11btims_seconds) & is.na(en11ztims_seconds) & is.na(en11ttims_seconds)), NA, en11Totaltims_seconds ),
+           en11Totaltiml_seconds = ifelse( (is.na(en11mtiml_seconds) & is.na(en11rtiml_seconds) & is.na(en11btiml_seconds) & is.na(en11ztiml_seconds) & is.na(en11ttiml_seconds)), NA, en11Totaltiml_seconds ),
+           en11Totaltimr_seconds = ifelse( (is.na(en11mtimr_seconds) & is.na(en11rtimr_seconds) & is.na(en11btimr_seconds) & is.na(en11ztimr_seconds) & is.na(en11ttimr_seconds)), NA, en11Totaltimr_seconds )) %>% 
+    
+    ## create dummy versions of the aggregated time vars, into those who spent more than median time, and those who spent less than median time
+    mutate(en11Totaltims_seconds_1q = quantile(en11Totaltims_seconds, na.rm = TRUE)[2],
+           en11Totaltims_seconds_3q = quantile(en11Totaltims_seconds, na.rm = TRUE)[4],
+           en11Totaltims_seconds_quickquartile = as.factor(ifelse(en11Totaltims_seconds < en11Totaltims_seconds_1q, 1, ifelse(en11Totaltims_seconds > en11Totaltims_seconds_3q, 0, NA))),
+           en11Totaltiml_seconds_1q = quantile(en11Totaltiml_seconds, na.rm = TRUE)[2],
+           en11Totaltiml_seconds_3q = quantile(en11Totaltiml_seconds, na.rm = TRUE)[4],
+           en11Totaltiml_seconds_quickquartile = as.factor(ifelse(en11Totaltiml_seconds < en11Totaltiml_seconds_1q, 1, ifelse(en11Totaltiml_seconds > en11Totaltiml_seconds_3q, 0, NA))),
+           en11Totaltimr_seconds_1q = quantile(en11Totaltimr_seconds, na.rm = TRUE)[2],
+           en11Totaltimr_seconds_3q = quantile(en11Totaltimr_seconds, na.rm = TRUE)[4],
+           en11Totaltimr_seconds_quickquartile = as.factor(ifelse(en11Totaltimr_seconds < en11Totaltimr_seconds_1q, 1, ifelse(en11Totaltimr_seconds > en11Totaltimr_seconds_3q, 0, NA)))) %>% 
+  
+    rebindAttributes(cnt)
+  
+  for (time_var in c("en11Totaltims_seconds_quickquartile", "en11Totaltiml_seconds_quickquartile", "en11Totaltimr_seconds_quickquartile")) {
+    print(time_var)
+    
+    temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0("erea ~ ", time_var)),
+                                  data = temp_lesdf,
+                                  jrrIMax = Inf,
+                                  weightVar = "totwgt"),
+                           error = function(cond) {
+                             message(cond)
+                             return(0)
+                           })
+    if (length(temp_lmsdf) != 1) {
+      out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+      out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+      out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+      out_temp$n0 <- temp_lmsdf$n0
+      out_temp$nUsed <- temp_lmsdf$nUsed
+      out_temp$coef <- temp_lmsdf$coefmat$coef
+      out_temp$se <- temp_lmsdf$coefmat$se
+      out_temp$t <- temp_lmsdf$coefmat$t
+      out_temp$dof <- temp_lmsdf$coefmat$dof
+      out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+      out_temp$r2 <- temp_lmsdf$r.squared
+    } else {
+      out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                             "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
+    }
+    out <- rbind.fill(out, out_temp)
+  }
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_erea_timeQuickQuartileVars.csv")), row.names = FALSE)
 
 
 
