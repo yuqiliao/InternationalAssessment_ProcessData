@@ -179,6 +179,26 @@ for (cnt in ePIRLS$datalist) {
 
 # export
 write.csv(out, file.path(exportPath, paste0(today(),"eP16_eachModule_erea_adClick_pct.csv")), row.names = FALSE)
+eP16_eachModule_erea_adClick_pct <- out
+
+# most PCT in ad clicks 
+eP16_eachModule_erea_adClick_pct %>% 
+  filter(EqVarValue == 1) %>% 
+  group_by(IDCNTRY) %>% 
+  arrange(IDCNTRY, desc(PCT)) %>% 
+  slice(1)
+
+# least PCT in ad clicks 
+eP16_eachModule_erea_adClick_pct %>% 
+  filter(EqVarValue == 1) %>% 
+  group_by(IDCNTRY) %>% 
+  arrange(IDCNTRY, PCT) %>% 
+  slice(1) 
+
+# range of PCT in ad clicks
+eP16_eachModule_erea_adClick_pct %>% 
+  filter(EqVarValue == 1) %>% 
+  arrange(desc(PCT))
 
 
 ## Score
@@ -808,7 +828,7 @@ for (cnt in ePIRLS$datalist) {
 }
 
 # export
-write.csv(out, file.path(exportPath, paste0(today(),"eP16_eachModule_adClick_itsex_pct_gap.csv")), row.names = FALSE)
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_eachModule_adClick_itsex_pct_gapAmongClicked.csv")), row.names = FALSE)
 
 
 
@@ -1242,7 +1262,7 @@ for (cnt in ePIRLS$datalist) {
 write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_erea_adClickTotal_itsex_pct.csv")), row.names = FALSE)
 
 
-## by ad click and by gender - gap
+## by ad click and by gender - gapAmongClicked
 out <- data.frame("IDCNTRY" = character(0),
                   "EqVar" = character(0),
                   "groupA" = character(0),
@@ -1324,8 +1344,92 @@ for (cnt in ePIRLS$datalist) {
 }
 
 # export
-write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_adClickTotal_itsex_pct_gap.csv")), row.names = FALSE)
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_adClickTotal_itsex_pct_gapAmongClicked.csv")), row.names = FALSE)
 
+
+## by ad click and by gender - gapAmongNonClicked
+out <- data.frame("IDCNTRY" = character(0),
+                  "EqVar" = character(0),
+                  "groupA" = character(0),
+                  "groupB" = character(0),
+                  "pctA" = numeric(0),
+                  "pctAse" = numeric(0),
+                  "pctB" = numeric(0),
+                  "pctBse" = numeric(0),
+                  "diffAB" = numeric(0),
+                  "covAB" = numeric(0),
+                  "diffABse" = numeric(0),
+                  "diffABpValue" = numeric(0),
+                  "dofAB" = numeric(0),
+                  "n0A" = numeric(0),
+                  "n0B" = numeric(0),
+                  "nUsedA" = numeric(0),
+                  "nUsedB" = numeric(0))
+
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = as.factor(ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0))),
+           adClickTotal = as.factor(adClickTotal)) %>% 
+    rebindAttributes(cnt)
+  
+  
+  #filter here
+  temp_lesdf_filtered <- temp_lesdf %>% 
+    filter(adClickTotal_d_clicked %in% c("0")) %>% 
+    rebindAttributes(cnt)
+  
+  temp_gap <- tryCatch(gap(variable = "erea",
+                           data = temp_lesdf_filtered,
+                           groupA = itsex == "GIRL",
+                           groupB = itsex == "BOY",
+                           jrrIMax = Inf,
+                           weightVar = "totwgt"),
+                       error = function(cond) {
+                         message(cond)
+                         return(0)
+                       })
+  if (length(temp_gap) != 1) {
+    out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_gap$percentage)))
+    out_temp$EqVar <- paste0(x, "_d_clicked")
+    
+    out_temp$groupA <- as.character(temp_gap$labels$A)[3]
+    out_temp$groupB <- as.character(temp_gap$labels$B)[3]
+    
+    out_temp$pctA <- temp_gap$percentage$pctA
+    out_temp$pctAse <- temp_gap$percentage$pctAse
+    out_temp$pctB <- temp_gap$percentage$pctB
+    out_temp$pctBse <- temp_gap$percentage$pctBse
+    out_temp$diffAB <- temp_gap$percentage$diffAB
+    out_temp$covAB <- temp_gap$percentage$covAB
+    out_temp$diffABse <- temp_gap$percentage$diffABse
+    out_temp$diffABpValue <- temp_gap$percentage$diffABpValue
+    out_temp$dofAB <- temp_gap$percentage$dofAB
+    
+    out_temp$n0A <- temp_gap$labels$n0A
+    out_temp$n0B <- temp_gap$labels$n0B
+    out_temp$nUsedA <- temp_gap$labels$nUsedA
+    out_temp$nUsedB <- temp_gap$labels$nUsedB
+  } else {
+    out_temp <- data.frame("IDCNTRY" = cnt$country,
+                           "EqVar" = paste0(x, "_d_clicked"))
+  }
+  out <- rbind.fill(out, out_temp)
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_adClickTotal_itsex_pct_gapAmongNonClicked.csv")), row.names = FALSE)
 
 ### 5. ad click situations#####
 ## students are given two modules, so their ad click situations should be one of c(NA_NA, NA_0, 0_NA, NA_1, 1_NA, 1_0, 0_1, 1_1, 0_0). Below code finds out about the score and pct of each situations
