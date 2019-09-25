@@ -1261,6 +1261,131 @@ for (cnt in ePIRLS$datalist) {
 # export
 write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_erea_adClickTotal_itsex_pct.csv")), row.names = FALSE)
 
+## ad click (as a continuous outcome variable) by gender (edsurveyTable)
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "EqVar1Value" = character(0),
+                  "EqVar2Value" = character(0),
+                  "N" = numeric(0),
+                  "WTD_N" = numeric(0),
+                  "PCT" = numeric(0),
+                  "SE_PCT" = numeric(0),
+                  "MEAN" = numeric(0),
+                  "SE_MEAN" = numeric(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0))
+
+for (cnt in ePIRLS$datalist) {
+  print(cnt$country)
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0)), #don't make adClickTotal_d_clicked a factor, cuz otherwise it's treated as 1 and 2 in edsurveyTable
+           adClickTotal = as.factor(adClickTotal)) %>% 
+    rebindAttributes(cnt)
+  
+  temp_edsurveytable <- tryCatch(edsurveyTable(formula = as.formula(paste0("adClickTotal_d_clicked ~ itsex")),
+                                               data = temp_lesdf,
+                                               jrrIMax = Inf,
+                                               weightVar = "totwgt"),
+                                 error = function(cond) {
+                                   message(cond)
+                                   return(0)
+                                 })
+  if (length(temp_edsurveytable) != 1) {
+    out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_edsurveytable$data)))
+    out_temp$YVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1]
+    out_temp$EqVar <- str_split(temp_edsurveytable$formula, pattern = "~")[[3]][1]
+    out_temp$EqVar1Value <- temp_edsurveytable$data[,1]
+    out_temp$EqVar2Value <- temp_edsurveytable$data[,2]
+    out_temp$N <- temp_edsurveytable$data$N
+    out_temp$WTD_N <- temp_edsurveytable$data$WTD_N
+    out_temp$PCT <- temp_edsurveytable$data$PCT
+    out_temp$SE_PCT <- temp_edsurveytable$data$`SE(PCT)`
+    out_temp$MEAN <- temp_edsurveytable$data$MEAN
+    out_temp$SE_MEAN <- temp_edsurveytable$data$`SE(MEAN)`
+    out_temp$n0 <- temp_edsurveytable$n0
+    out_temp$nUsed <- temp_edsurveytable$nUsed
+  } else {
+    out_temp <- data.frame("IDCNTRY" = cnt$country,
+                           "YVar" = str_split(temp_edsurveytable$formula, pattern = "~")[[2]][1])
+  }
+  
+  out <- rbind.fill(out, out_temp)
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_adClickTotal_itsex_edsurveyTable.csv")), row.names = FALSE)
+
+## ad click (as a continuous outcome variable) by gender (lm.sdf)
+out <- data.frame("IDCNTRY" = character(0),
+                  "YVar" = character(0),
+                  "EqVar" = character(0),
+                  "n0" = numeric(0),
+                  "nUsed" = numeric(0),
+                  "coef" = numeric(0),
+                  "se" = numeric(0),
+                  "t" = numeric(0),
+                  "dof" = numeric(0),
+                  "pVal" = numeric(0),
+                  "r2" = numeric(0))
+
+
+for (cnt in ePIRLS$datalist) {
+  
+  print(cnt$country)
+  
+  temp_lesdf <- getData(data = cnt,
+                        varnames = allvars,
+                        omittedLevels = FALSE, addAttributes = TRUE)
+  
+  print(nrow(temp_lesdf))
+  
+  temp_lesdf <- temp_lesdf %>% 
+    mutate(adClickTotal = select(., en11madz, en11radz, en11badz, en11zadz, en11tadz) %>% rowSums(na.rm = TRUE)) %>%  ##NOTE THAT BY DOING THIS, "sum(NA, NA, NA, NA, NA, na.rm = TRUE)" WOULD RETURN "0", TO FIX THAT,
+    mutate(adClickTotal = ifelse( (is.na(en11madz) & is.na(en11radz) & is.na(en11badz) & is.na(en11zadz) & is.na(en11tadz)), NA, adClickTotal ),
+           adClickTotal_d_clicked = ifelse(is.na(adClickTotal), NA,
+                                                     ifelse(adClickTotal >= 1, 1, 0)), #don't make adClickTotal_d_clicked a factor, cuz otherwise it's treated as 1 and 2 in lm.sdf
+           adClickTotal = as.factor(adClickTotal)) %>% 
+    rebindAttributes(cnt)
+  
+  temp_lmsdf <- tryCatch(lm.sdf(formula = as.formula(paste0("adClickTotal_d_clicked ~ itsex")),
+                                data = temp_lesdf,
+                                jrrIMax = Inf,
+                                weightVar = "totwgt"),
+                         error = function(cond) {
+                           message(cond)
+                           return(0)
+                         })
+  if (length(temp_lmsdf) != 1) {
+    out_temp <- data.frame("IDCNTRY" = rep(cnt$country, nrow(temp_lmsdf$coefmat)))
+    out_temp$YVar <- str_split(temp_lmsdf$formula, pattern = "~")[[2]][1]
+    out_temp$EqVar <- row.names(temp_lmsdf$coefmat)
+    out_temp$n0 <- temp_lmsdf$n0
+    out_temp$nUsed <- temp_lmsdf$nUsed
+    out_temp$coef <- temp_lmsdf$coefmat$coef
+    out_temp$se <- temp_lmsdf$coefmat$se
+    out_temp$t <- temp_lmsdf$coefmat$t
+    out_temp$dof <- temp_lmsdf$coefmat$dof
+    out_temp$pVal <- temp_lmsdf$coefmat$`Pr(>|t|)`
+    out_temp$r2 <- temp_lmsdf$r.squared
+  } else {
+    out_temp <- data.frame("IDCNTRY" = cnt$country, 
+                           "YVar" = str_split(temp_lmsdf$formula, pattern = "~")[[2]][1])
+  }
+  out <- rbind.fill(out, out_temp)
+}
+
+# export
+write.csv(out, file.path(exportPath, paste0(today(),"eP16_allModule_adClickTotal_itsex_lmsdf.csv")), row.names = FALSE)
+
 
 ## by ad click and by gender - gapAmongClicked
 out <- data.frame("IDCNTRY" = character(0),
