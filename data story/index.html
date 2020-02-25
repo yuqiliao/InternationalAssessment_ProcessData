@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>&#128218;ePIRLS Data Story</title>
+        <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
+    </head>
+    <body>
+        <section id="intro">
+            <h1>Who Clicks On Advertisements During an Online Reading Assessment?<img class="adClickGif" src="stylesheets/img/animation.gif"></h1>
+            <h2><i>An Analysis of ePIRLS 2016 Process Data</i></h2>
+            <p><i>Yuqi Liao</i><p>
+
+            <h3><img class="onlineReadingIcon" src="stylesheets/img/onlineReadingIcon.svg"> Introduction</h3>
+
+            <p>Just like everyone else in the modern society, students around the world are having increasing access to and consumption of online information both in and out of school. How well can students read online? How does their online reading literacy compare in a global context? The international assessment, <a href="http://timssandpirls.bc.edu/pirls2016/international-results/epirls/about-epirls-2016/" target="_blank">ePIRLS</a>, was first administered in 2016 to answer that. This innovative assessment of online reading measures how well 4th-grade students around the world read, interpret, and critique information online. The <a href="http://timssandpirls.bc.edu/pirls2016/international-results/epirls/student-achievement/" target="_blank">findings</a> have been published and the <a href="https://timssandpirls.bc.edu/pirls2016/international-database/index.html" target="_blank">dataset</a> made available, both of which provide policy makers with information essential to developing appropriate public policies in our age of online information.</p>
+
+            <p>While online reading provides new opportunities that offline reading does not, it also presents challenges for readers, one of which is the potential for distractions (<span class="hero-tooltips" id="tooltip_refGoldstein">Goldstein et al., 2014</span>.). Remember that time when you were reading an article online, where half-way through, there’s an advertisement that caught your eye, and 10 minutes later, you finished purchasing whatever that was and completely forgot about the article? The designers of ePIRLS surely remember such moments, so they put advertisements in many webpages from which students are supposed to read and collect information. The hypothesis is that, students working on school assignments or research projects will finish sooner if they focus on finding critical information and are not distracted (<span class="hero-tooltips" id="tooltip_refMullis">Mullis et al., 2017</span>).</p>
+
+            <p>As a digitally based assessment, ePIRLS collects data on the test-taking process, including whether or not students have clicked on those advertisements. This can provide insights into the relationship between students’ performance and their testing behavior. However, little process data research has been conducted on ePIRLS or on other international large-scale assessments for that matter. In this post, I use ePIRLS data to test the hypothesis above, and to explore further about how students around the world read and behave when presented with the distraction of online advertisements.</p>
+
+            <h3><img class="onlineReadingIcon" src="stylesheets/img/onlineReadingIcon.svg"> Data and Methods</h3>
+
+            <p>Let’s first understand how the ePIRLS assessment works and where the advertisements appear in the assessment.</p>
+
+            <p>The ePIRLS 2016 assessment was participated by 4th-grade students in <a href="http://timssandpirls.bc.edu/pirls2016/international-results/epirls/about-epirls-2016/epirls-2016-countries/" target="_blank">16 education systems</a>. The assessment consists of <span class="hero-tooltips" id="tooltip_modules">five modules</span> of science and social studies topics, with each module lasting up to 40 minutes.</p>
+
+            <p>Each participating student took a randomly-assigned combination of two of the five modules. Each module was structured as a class project, and represented in a simulated internet environment that contains advertisements, such as the screenshots shown below which comes from the module "Mars".</p>
+
+            <img class="adMars" src="stylesheets/img/adMars.png">
+
+            <p>The module "Mars" and "Dr. Elizabeth blackwell" (out of five modules) have been <a href="http://timssandpirls.bc.edu/pirls2016/international-results/epirls/take-the-epirls-assessment/" target="_blank">released online</a>, so they can be viewed in the same way as they were presented to participating students. Below is a video walk-through (also available <a href="http://timssandpirls.bc.edu/pirls2016/international-results/epirls/example-tasks-video/" target="_blank">online</a>) about the logistics of the assessment.</p>.
+
+            <video class="video" controls poster="http://pirls2016.org/wp-content/uploads/2017/01/intro-image-epirls-01.png">
+                <source src="http://pirls2016.org/wp-content/uploads/2017/videos/e16_Example_Tasks_FINAL.mp4" type=video/mp4>
+            </video>
+
+            <p>ePIRLS recorded information on how many times each student clicks on the advertisements. This information along with student’s online reading performance is used for my analyses. All analyses account for the complex survey design of ePIRLS and use all five <a href="https://pirls.bc.edu/publications/pirls/2016-methods/P16_Methods_and_Procedures.pdf" target="_blank">plausible values</a> (link to read more about plausible values) of the online reading achievement scale.</p>
+
+            <h3><img class="onlineReadingIcon" src="stylesheets/img/onlineReadingIcon.svg"> Findings</h3>
+
+            <p>Let’s dive in to the results, which are categorized into 4 research questions below. Click on any question to jump to its section, or scroll down (recommended) to read them all.</p>
+            <ol class = "listResearchQuestions">
+                <li><a href = "#RQ1">What are students’ advertisement-clicking patterns in each of the five modules?</a></li>
+                <li><a href = "#RQ2">What percentage of students clicked on advertisements at least once in the assessment?</a></li>
+                <li><a href = "#RQ3">How are students’ advertisement-clicking patterns associated with their online reading achievement?</a></li>
+                <li><a href = "#RQ4">How are students’ advertisement-clicking patterns associated with time spent completing the assessment?</a></li>
+            </ol>
+
+            <p id="scrollMsg">  
+                <br />
+                <img class="adClickGifSmall" src="stylesheets/img/animation.gif">  Scroll to continue  <img class="adClickGifSmall" src="stylesheets/img/animation.gif"><br />
+                &#9660;<br />
+                &#9660;<br />
+                &#9660;
+            </p>
+            <p id="errMsg"></p>
+        </section>
+        <section id='scroll'>
+            <!-- graphics -->
+            <div class='scroll__graphic sticky'>
+                <div class="plotArea is-active" id="chart"></div>
+            </div>
+            <!-- text -->
+            <div class='scroll__text'>
+                <div class='step is-active' data-step='0'>
+                    <h3 id = "RQ1" class = "RQ1">1. What are students’ advertisement-clicking patterns in each of the five modules?</h3>
+                    <p class = "RQ1">In the plot to your right, you will see the range of the number of ad-clicks from students in each education system and module.</p>
+                </div>
+                <div class='step' data-step='1'>
+                    <p class = "RQ1">content 1 content 1 content 1</p>
+                </div>
+                <div class='step' data-step='2'>
+                    <p>content 2</p>
+                </div>
+                <div class='step' data-step='3'>
+                    <p>content 3</p>
+                </div> 
+                <div class='step' data-step='4'>
+                    <p>content 4 - highlight Mars</p>
+                </div> 
+                <div class='step' data-step='5'>
+                    <p>content 5 - long bar</p>
+                </div> 
+                <div class='step' data-step='6'>
+                    <p>content 5 - extra blabla</p>
+                </div>
+                <div class='step' data-step='7'>
+                    <p>content 6</p>
+                </div>
+                <div class='step' data-step='8'>
+                    <p>content 7</p>
+                </div>  
+                <div class='step' data-step='9'>
+                    <p>content 8</p>
+                </div>   
+                <div class='step' data-step='10'>
+                    <p>content 9</p>
+                </div>
+                <div class='step' data-step='11'>
+                    <p>content 10</p>
+                </div>              
+            </div>
+        </section>
+        <section id="outro">
+            <h3 id = "References">References</h3>
+            <p>
+                Goldstein, D. G., Suri, S., McAfee, R. P., Ekstrand-Abueg, M., & Diaz, F. (2014). The Economic and Cognitive Costs of Annoying Display Advertisements. <i>Journal of Marketing Research</i>, 51(6), 742–752. <a href="https://doi.org/10.1509/jmr.13.0439" target="_blank">https://doi.org/10.1509/jmr.13.0439</a>
+            </p>
+            <p>
+                Mullis, I. V. S., Martin, M. O., Foy, P., & Hooper, M. (2017). <i>ePIRLS 2016 International Results in Online Informational Reading</i>. Retrieved from Boston College, TIMSS & PIRLS International Study Center website: <a href="http://timssandpirls.bc.edu/pirls2016/international-results/" target="_blank">http://timssandpirls.bc.edu/pirls2016/international-results/</a>
+
+            </p>
+            <h3>Credits</h3>
+            <h4>People</h4>
+            <p>
+                Many thanks to Alex Engler and Andrew McNutt for their tireless help with code and design throughout this project.<br />
+                Many thanks <i>also</i> to my peers in the <a href="http://capp.uchicago.edu" target="_blank">UChicago CAPP program</a> - too many to list individually - who have provided useful feedback and user testing.
+            </p>
+            <h4>Data Sources</h4>
+            <p>
+                Solar energy generation: <a href="https://www.eia.gov/state/seds/" target="_blank">State Energy Data Systems (SEDS), U.S. Energy Information Administration</a><br />
+                Solar irradiance: <a href="https://www.nrel.gov/gis/data-solar.html" target="_blank">National Renewable Energy Laboratory, U.S. Department of Energy</a><br />
+                Solar panel installations: <a href="https://openpv.nrel.gov/" target="_blank">OpenPV Project, NREL, U.S. Department of Energy</a><br />
+                Population estimates: <a href="https://seer.cancer.gov/popdata/download.html" target="_blank">Surveillance, Epidemiology and End Results (SEER) Program, National Cancer Institute</a><br />
+                State tax policies: <a href="http://www.dsireusa.org/resources/data-and-tools/" target="_blank">Database of State Incentives for Renewables & Efficiency (DSIRE), North Carolina State University</a><br />
+                U.S. county-level shapefiles: <a href="https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html" target="_blank">U.S. Census Bureau</a>
+            </p>
+            <h4>Code Sources<h4>
+            <p>
+                This project would not have been possible without the multitude of resources available online for learning and implementing D3, including:<br /><br />
+                <a href="https://d3js.org/" target="_blank">D3 v5</a> by Mike Bostock.<br />
+                <a href="https://alignedleft.com/work/d3-book" target="_blank"><i>Interactive Data Visualization for the Web (2nd Ed.)</i></a> by Scott Murray.<br />
+                <a href="https://github.com/russellgoldenberg/scrollama" target="_blank">Scrollama</a> by Russell Goldenberg.<br />
+                <a href="https://pudding.cool/process/introducing-scrollama/" target="_blank">Extensive implementation details for Scrollama</a> by The Pudding.<br />
+                <a href="http://wd.dizaina.net/en/scripts/stickyfill/" target="_blank">Stickyfill</a> by Oleg Korsunsky.<br />
+                <a href="https://github.com/topojson/topojson" target="_blank">TopoJSON library</a> by Mike Bostock.<br />
+                <a href="https://d3-legend.susielu.com/" target="_blank">D3-legend</a> by Susie Lu.<br />
+                Code for dynamic sizing adapted from <a href="https://github.com/d3/d3-selection/issues/128" target="_blank">this Github issue</a>.<br >
+                Code for multi-line charts adapted from <a href="http://bl.ocks.org/asielen/44ffca2877d0132572cb" target="_blank">this block</a>.<br />
+                Code for wipe-in transitions adapted from <a href="https://github.com/mdvandergon/monetary-policy" target="_blank">Mark Vandergon</a>.<br />
+                Code for appending annotation lines adapted from <a href="https://stackoverflow.com/questions/25418333/how-to-draw-straight-line-in-d3-js-horizontally-and-vertically" target="_blank">this StackOverflow thread</a>.<br />
+                Code for wrangling GeoJSON adapted from <a href="https://stackoverflow.com/questions/26232942/get-max-and-min-value-from-a-geojson" target="_blank">this StackOverflow thread</a>.<br />
+                Code for the map's color scale adapted from <a href="http://bl.ocks.org/jfreyre/b1882159636cc9e1283a" target="_blank">this block</a>.<br />
+                Code for calculating centroids from GeoJSON adapted from <a href="https://bl.ocks.org/curran/55d327542393530662c3" target="_blank">this block</a>.<br />
+                Code for working with TopoJSON adapted from <a href="https://bl.ocks.org/almccon/410b4eb5cad61402c354afba67a878b8" target="_blank">this block</a>.<br />
+                Code for mouseover tooltips adapted from <a href="http://bl.ocks.org/d3noob/a22c42db65eb00d4e369" target="_blank">this block</a>.<br />
+            </p>
+            <h4>Project Code</h4>
+            <p>
+                All code for this project is hosted on <a href="https://github.com/jtanwk/us-solar-d3" target="_blank">Github</a>.<br />
+                The more extensive static report that formed the basis for this project, including detailed data assembly scripts in R, can be found <a href="https://jtanwk.github.io/us-solar/" target="_blank">here</a>.<br />
+            </p>
+        </section>
+        <!-- D3 v5.14.2 downloaded on December, 2019 from https://d3js.org/ -->
+        <script type="text/javascript" src="js/lib/d3.min.js"></script>
+        <!-- External packages -->
+        <script src='js/lib/intersection-observer.js'></script>
+        <script src='js/lib/scrollama.js'></script>
+        <script src="js/lib/stickyfill.min.js"></script>
+        <script src="js/lib/popper.min.js"></script>
+        <script src="js/lib/tippy.js"></script>
+        <script>
+        ; (function() {
+            tippy("#tooltip_refGoldstein", {
+              content: "Goldstein, D. G., Suri, S., McAfee, R. P., Ekstrand-Abueg, M., & Diaz, F. (2014). The Economic and Cognitive Costs of Annoying Display Advertisements. <i>Journal of Marketing Research</i>, 51(6), 742–752.",
+              placement: "bottom",
+              theme: "tomato",
+              trigger: "click",
+              followCursor: false,
+            })
+            tippy("#tooltip_refMullis", {
+                content: "Mullis, I. V. S., Martin, M. O., Foy, P., & Hooper, M. (2017). <i>ePIRLS 2016 International Results in Online Informational Reading</i>.",
+                placement: "bottom",
+                theme: "tomato",
+                trigger: "click",
+                followCursor: false,
+            })
+            tippy("#tooltip_modules", {
+                content: "Module names<ol><li>Mars</li><li>Rainforests</li><li>Dr. Elizabeth Blackwell</li><li>Zebra and Wildebeest Migration</li><li>The Legend of Troy</li></ol>",
+                placement: "bottom",
+                theme: "tomato",
+                trigger: "click",
+                followCursor: false,
+            })
+        })()
+        </script>
+        <!-- <script src="js/lib/d3-legend.min.js"></script> -->
+        <script src="js/lib/d3-annotation.min.js"></script>
+        <!-- Internal scripts -->
+        <script type="text/javascript" src="js/00-init-svg.js"></script>
+        <script type="text/javascript" src="js/01-drawRangeChart.js"></script>
+        <script type="text/javascript" src="js/01-drawRangeChartA.js"></script>
+        <script type="text/javascript" src="js/01-drawRangeChartB.js"></script>
+        <script type="text/javascript" src="js/02-drawBarChart.js"></script>
+        <script type="text/javascript" src="js/02-drawBarChartA.js"></script>
+        <script type="text/javascript" src="js/02-drawBarChartB.js"></script>
+        <script type="text/javascript" src="js/03-drawLongBarChart.js"></script>
+        <script type="text/javascript" src="js/04-drawTwoBars.js"></script>
+        <script type="text/javascript" src="js/05-drawTwoBarsWithWaterFalls.js"></script>
+        <script type="text/javascript" src="js/05-drawTwoBarsWithWaterFallsA.js"></script>
+        <script type="text/javascript" src="js/05-drawTwoBarsWithWaterFallsB.js"></script>
+        <script type="text/javascript" src="js/05-drawTwoBarsWithWaterFallsC.js"></script>
+        <script type="text/javascript" src="js/script.js"></script>
+
+    </body>
+</html>

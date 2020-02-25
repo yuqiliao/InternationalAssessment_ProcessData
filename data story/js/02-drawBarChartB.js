@@ -1,0 +1,307 @@
+function drawBarChartB(data, response) {
+    
+    /**********************
+    ***** BASIC SETUP *****
+    **********************/
+
+    // dynamic dimension sizing code adapted from
+    // https://github.com/d3/d3-selection/issues/128
+    const bbox = d3.select("#chart").node().getBoundingClientRect()
+
+    const width = bbox.width;
+    const height = bbox.height;
+    const margin = {top: 50, left: 130, right: 50, bottom: 50};
+
+    const plotWidth = width - margin.left - margin.right;
+    const plotHeight = height - margin.bottom - margin.top;
+
+    const smallMultipleWidth = plotWidth/5
+
+    const svg = d3.select("#chart").select("svg");
+
+    const DURATION = 1000;
+
+
+    /// draw most of the elements 5 times
+    var moduleVars = [{"en11madz": "Mars"}, 
+                      {"en11radz": "Rainforests"},
+                      {"en11badz": "Dr Blackwell"},
+                      {"en11zadz": "Wildebeest Migration"}, 
+                      {"en11tadz": "The Legend of Troy"}];
+
+    //console.log(moduleVars)
+    //console.log(Object.values(moduleVars[0])[0])
+
+
+    /***********************
+    ***** X & Y SCALES *****
+    ***********************/
+
+    let xMin = 0;
+    let xMax = 25;
+    let yGroup = "IDCNTRY";
+
+    let smallMultiplePadding = 30
+   
+    let yScale = d3.scaleBand()
+        .domain(data.map(d => d[yGroup]))
+        .range([0, plotHeight])
+        .padding(.5);
+    
+    /***************************************
+    ***** X AXIS, AXIS LABEL, GRIDLINE *****
+    ***************************************/
+
+    if (response.direction === "up") { // if coming from the long bar chart (which removed xAxis1-4 & xGrid1-4), add them back
+            svg.append("g")
+                .attr("class", "xAxis xAxis1")
+            svg.append("g")
+                .attr("class", "xAxis xAxis2")
+            svg.append("g")
+                .attr("class", "xAxis xAxis3")
+            svg.append("g")
+                .attr("class", "xAxis xAxis4")
+
+            svg.append("g")
+                .attr("class", "xGrid xGrid1")
+            svg.append("g")
+                .attr("class", "xGrid xGrid2")
+            svg.append("g")
+                .attr("class", "xGrid xGrid3")
+            svg.append("g")
+                .attr("class", "xGrid xGrid4")
+        }
+
+
+    svg.selectAll(".xLabel")
+        .data([{"label": "Percent of students who clicked ads"}])
+        .text(d => d.label);
+
+
+    let filteredXTitle = [moduleVars[i]]
+
+    svg.selectAll(".xTitle")
+        .data(moduleVars)
+        .enter()
+        .append("text")
+        .attr("class", "xTitle")
+        .attr("text-anchor", "start")
+        .attr("x", (d,i) => margin.left + smallMultiplePadding +  smallMultipleWidth * i + 10)
+        .attr("y", margin.top)
+        .style("font-family", "sans-serif")
+        .style("font-size", 12)
+        .style("opacity", 0)
+        //.text(d => Object.values(d));
+        .text(function(d) { 
+            return Object.values(d); 
+            })
+        .transition()
+        .duration(DURATION * 0.5)
+            .style("opacity", 1)
+
+    /***************************************
+    ***** Y AXIS, AXIS LABEL, GRIDLINE *****
+    ***************************************/
+
+    svg.select(".yAxis")
+        .transition()
+        .duration(DURATION)
+            .attr("transform", `translate(${margin.left}, ${margin.top})`)
+            .call(d3.axisLeft(yScale)
+                .tickSize(3)
+                .tickPadding(0))
+            .style("text-anchor", "end")
+            .style("alignment-baseline", "middle")
+            //.style("font-weight", "bold")
+            .style("font-family", "sans-serif")
+            .style("font-size", 12);
+
+    // svg.select(".yGrid")
+    //     .attr("transform", `translate(${margin.left}, ${margin.top})`) //+ 1 * yScale.bandwidth()
+    //     .call(d3.axisLeft(yScale)
+    //         .tickSize(-(plotWidth))
+    //         .tickFormat("")
+    //     );
+
+    
+    /*************************
+    ***** TITLE, CAPTION *****
+    *************************/
+
+    // Create header grouping
+    const header = svg.select("#header");
+
+    // chart title
+    header.selectAll(".chartTitle")
+        .data([{"label": "Pecent of students who clicked on ads by education system and module"}])
+        //.enter()
+        //.append("text")
+        .text(function(d) {return d.label;})
+        // .attr("x", margin.left + smallMultiplePadding)
+        // .attr("y", margin.top - 30)
+        // .attr("text-anchor", "start")
+        // .attr("class", "chartTitle")
+        // .style("font-family", "sans-serif")
+        // .style("font-weight", "bold")
+        // .style("font-size", 20)
+
+    // Create footer grouping
+    const footer = svg.select("#footer");
+
+    // Caption with data source
+    footer.selectAll(".captionText")
+        .data([{"label": "Data source: ePIRLS 2016 data"}])
+        //.enter()
+        //.append("text")
+        .text(function(d) {return d.label;})
+        // .attr("x", margin.left + smallMultiplePadding)
+        // .attr("y", height - 15)
+        // .attr("text-anchor", "start")
+        // .attr("class", "captionText")
+
+    /*********************
+    ***** HIDE BOX V2*****
+    **********************/
+
+    d3.selectAll(".highlightBoxV2")
+        .transition()
+        .duration(0.5 * DURATION)
+        .style("opacity", 0)    
+   
+
+    /*********************
+    ***** SHOW BOX V3*****
+    **********************/
+
+    if (response.direction === "up") { 
+
+        d3.selectAll(".highlightBoxV3")
+            .transition()
+            .delay(DURATION)
+            .duration(0.5 * DURATION)
+            .style("stroke-opacity", 1) 
+    } else {
+        d3.selectAll(".highlightBoxV3")
+            .transition()
+            .duration(0.5 * DURATION)
+            .style("stroke-opacity", 1) 
+    }
+
+    /*************************
+    ***** REMOVE rectLong*****
+    **************************/
+    d3.selectAll(".rectLong")
+        .transition()
+        .duration(DURATION)
+            .attr("width", 0)
+            .remove();
+
+
+    /****************
+    ***** LOOP  *****
+    *****************/
+    var i;
+    for (i = 0; i < moduleVars.length; i ++){
+        /***********************
+        ***** X & Y SCALES *****
+        ***********************/
+        // console.log(i)
+        // console.log([xMin, xMax])
+        // console.log([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)])
+        let xScale = d3.scaleLinear()
+            .domain([xMin, xMax])
+            .range([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)]);
+
+        /***************************************
+        ***** X AXIS, AXIS LABEL, GRIDLINE *****
+        ***************************************/
+
+
+
+        
+
+        svg.select(".xAxis".concat(i))
+            .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
+            .lower()
+            .transition()
+            .duration(DURATION)
+                .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
+                .call(d3.axisBottom(xScale)
+                    .ticks(4)
+                    //.tickFormat(d3.format("d"))
+            );
+
+        svg.select(".xGrid".concat(i))
+            .attr("transform", `translate(${margin.left}, ${margin.top})`)
+            .lower()
+            .transition()
+            .duration(DURATION)
+                .attr("transform", `translate(${margin.left}, ${margin.top})`)
+                .call(d3.axisBottom(xScale)
+                    .tickSize(plotHeight)
+                    .ticks(3)
+                    .tickFormat("")
+            );
+
+
+
+
+
+        
+
+
+
+        /********************************
+        ***** LINES , CIRCLES, RECTS*****
+        *********************************/
+
+
+
+        // Append g to hold lines
+        var plot = svg.select("#plot")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+
+        let filteredData = data.filter(d => d["Var"] === Object.keys(moduleVars[i])[0]);
+
+        plot.selectAll(".rect".concat(i))
+            .data(filteredData)
+            .enter() 
+            .append("rect")
+            .attr("class", "rect".concat(i))
+            .attr("x", d => xScale(0))
+            .attr("y", d => yScale(d[yGroup]))
+            .attr("height", yScale.bandwidth())
+            .style("fill", "blue")
+            .attr("width", 0)
+            .transition()
+            .delay(DURATION)//wait for the removal to happen first
+            .duration(DURATION)
+                .attr("width", function(d){
+                    return xScale(d["PCT"]) - xScale(0)
+                });
+
+        plot.selectAll(".line".concat(i))
+            .transition()
+            .duration(DURATION)
+                .style("opacity", 0)
+                .remove();
+
+        plot.selectAll(".circleLeft".concat(i))
+            .transition()
+            .duration(DURATION)
+                .style("opacity", 0)
+                .remove();
+
+        plot.selectAll(".circleRight".concat(i))
+            .transition()
+            .duration(DURATION)
+                .style("opacity", 0)
+                .remove();        
+
+    }
+
+    
+
+
+}
