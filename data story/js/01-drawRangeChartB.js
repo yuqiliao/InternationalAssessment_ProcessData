@@ -70,7 +70,7 @@ function drawRangeChartB(data, response) {
     *******************/
    var div = d3.select("#chart")
    .append("div")
-   .attr("class", "tooltip")
+   .attr("class", "tooltipRangeChart")
    .style("opacity", 0)
 
 

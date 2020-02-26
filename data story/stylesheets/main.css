@@ -433,7 +433,7 @@ a:hover { border-bottom: 1.5px dotted; }
 
 /* tooltip */
 
-div.tooltip {
+div.tooltipRangeChart {
     opacity: 0;
     position: absolute;
     top: -12px;
@@ -449,7 +449,7 @@ div.tooltip {
     font-size: 12px;
 }
 
-div.tooltip:before {
+div.tooltipRangeChart:before {
     content: '';
     position: absolute;
     bottom: 0;
@@ -465,8 +465,4 @@ div.tooltip:before {
     z-index: 10;
     font-family: "Open Sans";
     font-size: 12px;
-}
-
-.selectedCircle{
-    fill: #F24D29
 }
