@@ -32,6 +32,19 @@ function svg_init() {
         .attr("width", width)
         .attr("height", height);
 
+    /*******************
+    ***** TOOLTIPS *****
+    ********************/
+    
+    d3.select("#chart")
+        .append("div")
+        .attr("class", "tooltipRangeChart")
+
+    d3.select("#chart")
+        .append("div")
+        .attr("class", "tooltipBarChart")
+
+
 
     const svg = d3.select("#chart").select("svg");
 

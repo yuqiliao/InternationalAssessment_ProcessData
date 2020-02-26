@@ -79,6 +79,26 @@ function drawBarChartA(data, response) {
     ***** Y AXIS, AXIS LABEL, GRIDLINE *****
     ***************************************/
 
+    if (response.direction === "up") { // if coming from the long bar chart (which removed xAxis1-4 & xGrid1-4), add them back
+        svg.append("g")
+            .attr("class", "xAxis xAxis1")
+        svg.append("g")
+            .attr("class", "xAxis xAxis2")
+        svg.append("g")
+            .attr("class", "xAxis xAxis3")
+        svg.append("g")
+            .attr("class", "xAxis xAxis4")
+
+        svg.append("g")
+            .attr("class", "xGrid xGrid1")
+        svg.append("g")
+            .attr("class", "xGrid xGrid2")
+        svg.append("g")
+            .attr("class", "xGrid xGrid3")
+        svg.append("g")
+            .attr("class", "xGrid xGrid4")
+    }
+
     svg.select(".yAxis")
         .attr("transform", `translate(${margin.left}, ${margin.top})`)
         .call(d3.axisLeft(yScale)
@@ -137,19 +157,30 @@ function drawBarChartA(data, response) {
     ***** SHOW BOX V2*****
     **********************/
 
-    d3.selectAll(".highlightBoxV2")
+   if (response.direction === "down") {
+        d3.selectAll(".highlightBoxV2")
         .transition()
         .duration(0.5 * DURATION)
-        .style("opacity", 1)    
-
-    /*********************
-    ***** HIDE BOX V3*****
-    **********************/
-
-    d3.selectAll(".highlightBoxV3")
+        .style("opacity", 1) 
+   } else {
+        d3.selectAll(".highlightBoxV2")
         .transition()
+        .delay(DURATION)
         .duration(0.5 * DURATION)
-        .style("stroke-opacity", 0)    
+        .style("opacity", 1)  
+   }
+       
+   
+        
+    /*************************
+    ***** REMOVE rectLong*****
+    **************************/
+   d3.selectAll(".rectLong")
+   .transition()
+   .duration(DURATION)
+       .attr("width", 0)
+       .remove();
+    
 
     /****************
     ***** LOOP  *****
@@ -171,22 +202,26 @@ function drawBarChartA(data, response) {
         ***************************************/
 
         svg.select(".xAxis".concat(i))
+            .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
+            .lower()
             .transition()
             .duration(DURATION)
-            .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
-            .call(d3.axisBottom(xScale)
-                .ticks(4)
-                //.tickFormat(d3.format("d"))
+                .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
+                .call(d3.axisBottom(xScale)
+                    .ticks(4)
+                    //.tickFormat(d3.format("d"))
             );
 
         svg.select(".xGrid".concat(i))
+            .attr("transform", `translate(${margin.left}, ${margin.top})`)
+            .lower()
             .transition()
             .duration(DURATION)
-            .attr("transform", `translate(${margin.left}, ${margin.top})`)
-            .call(d3.axisBottom(xScale)
-                .tickSize(plotHeight)
-                .ticks(3)
-                .tickFormat("")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`)
+                .call(d3.axisBottom(xScale)
+                    .tickSize(plotHeight)
+                    .ticks(3)
+                    .tickFormat("")
             );
 
 
@@ -241,7 +276,8 @@ function drawBarChartA(data, response) {
             .transition()
             .duration(DURATION)
                 .style("opacity", 0)
-                .remove();        
+                .remove();     
+     
 
     }
 

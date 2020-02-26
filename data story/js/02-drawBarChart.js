@@ -132,7 +132,12 @@ function drawBarChart(data, response) {
         // .attr("y", height - 15)
         // .attr("text-anchor", "start")
         // .attr("class", "captionText")
-
+    
+    /******************
+    ***** TOOLTIP *****
+    *******************/
+    var div = d3.select(".tooltipBarChart")
+                .style("opacity", 0)
 
     /****************
     ***** LOOP  *****
@@ -208,6 +213,23 @@ function drawBarChart(data, response) {
                     return xScale(d["PCT"]) - xScale(0)
                 });
 
+        plot.selectAll(".rect".concat(i))
+            .on("mouseenter", function(d) {
+                d3.select(this)
+                    .style("fill", "#F24D29")
+                
+                div.style("opacity", 1)
+                    //.text([d["Min"]])
+                    .html(d3.format(".1f")(d["PCT"]) + "%")
+                    .style("left", (xScale(d["PCT"]) + 142) + "px")
+                    .style("top", (yScale(d[yGroup]) + 40) + "px")
+                })              
+            .on("mouseleave", function(d) { 
+                d3.select(this)
+                    .style("fill", "blue")
+                div.style("opacity", 0)
+                })
+
         plot.selectAll(".line".concat(i))
             .transition()
             .duration(DURATION)
@@ -274,22 +296,22 @@ function drawBarChart(data, response) {
             .style("opacity", 0)    
         };
 
-        /**************************
-        ***** HIGHLIGHT BOX V3*****
-        ***************************/
+        // /**************************
+        // ***** HIGHLIGHT BOX V3*****
+        // ***************************/ I decide to drop this box (and accordingly drop 02-drawBarChartB.js)
 
-        if (Object.keys(moduleVars[i])[0] === "en11madz" & plot.selectAll(".highlightBoxV3".concat(i)).empty()) {
-            plot.append("rect")
-                .attr("class", "highlightBoxV3 highlightBoxV3".concat(i))
-                .attr("x", xScale(xMin) - 10)
-                .attr("y", - yScale.bandwidth() * 1.2 )
-                .attr("width", xScale(xMax) - xScale(xMin) + 10*2)
-                .attr("height", plotHeight  + yScale.bandwidth() * 1.2)
-                .style("stroke", "purple")
-                .style("stroke-width", 3)
-                .style("stroke-opacity", 0)
-                .style("fill-opacity", 0);
-        }
+        // if (Object.keys(moduleVars[i])[0] === "en11madz" & plot.selectAll(".highlightBoxV3".concat(i)).empty()) {
+        //     plot.append("rect")
+        //         .attr("class", "highlightBoxV3 highlightBoxV3".concat(i))
+        //         .attr("x", xScale(xMin) - 10)
+        //         .attr("y", - yScale.bandwidth() * 1.2 )
+        //         .attr("width", xScale(xMax) - xScale(xMin) + 10*2)
+        //         .attr("height", plotHeight  + yScale.bandwidth() * 1.2)
+        //         .style("stroke", "purple")
+        //         .style("stroke-width", 3)
+        //         .style("stroke-opacity", 0)
+        //         .style("fill-opacity", 0);
+        // }
 
 
 

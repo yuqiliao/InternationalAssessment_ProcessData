@@ -165,13 +165,13 @@ function drawLongBarChart(data, response) {
 
 
     /*********************
-    ***** HIDE BOX V3*****
+    ***** HIDE BOX V2*****
     **********************/
 
-    d3.selectAll(".highlightBoxV3")
+    d3.selectAll(".highlightBoxV2")
         .transition()
         .duration(0.5 * DURATION)
-        .style("stroke-opacity", 0)    
+        .style("opacity", 0)    
 
 
     /****************

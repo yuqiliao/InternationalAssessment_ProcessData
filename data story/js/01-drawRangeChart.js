@@ -136,7 +136,8 @@ function drawRangeChart(data, response) {
         .attr("y", height - 15)
         .attr("text-anchor", "start")
         .attr("class", "captionText")
-        
+    
+
 
     /****************
     ***** LOOP  *****

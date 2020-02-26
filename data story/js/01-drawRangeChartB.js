@@ -68,10 +68,8 @@ function drawRangeChartB(data, response) {
     /******************
     ***** TOOLTIP *****
     *******************/
-   var div = d3.select("#chart")
-   .append("div")
-   .attr("class", "tooltipRangeChart")
-   .style("opacity", 0)
+   var div = d3.select(".tooltipRangeChart")
+                .style("opacity", 0)
 
 
 
@@ -196,7 +194,7 @@ function drawRangeChartB(data, response) {
                 
                 div.style("opacity", 1)
                     //.text([d["Min"]])
-                    .html("<strong>Minimun</strong>:"+ d["Min"])
+                    .html("<strong>Minimun</strong>: "+ d["Min"])
                     .style("left", (xScale(d["Min"]) + 86) + "px")
                     .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
                 })              
@@ -235,8 +233,8 @@ function drawRangeChartB(data, response) {
                 
                 div.style("opacity", 1)
                     //.text([d["Max"]])
-                    .html("<strong>Maximun</strong>:"+ d["Max"])
-                    .style("left", (xScale(d["Max"]) + 86) + "px")
+                    .html("<strong>Maximun</strong>: "+ d["Max"])
+                    .style("left", (xScale(d["Max"]) + 79) + "px")
                     .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
                 })              
             .on("mouseleave", function(d) { 
@@ -252,110 +250,6 @@ function drawRangeChartB(data, response) {
 
 
 
-
-
-
-
-
-
-
-    // /**************************
-    // ***** REMOVE OLD DATA *****
-    // **************************/
-
-    // if (response.direction === "up") {
-    //     // remove annotation layer from dotplot
-    //     d3.select(".annotationBox")
-    //         .transition()
-    //         .duration(0.5 * DURATION)
-    //         .style("opacity", 0)
-    //         .remove();
-    // };
-
-
-    // /****************
-    // ***** LINES *****
-    // *****************/
-
-    // var plot = svg.select("#plot");
-    //     // .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-    // var solarLabels = [
-    //     "Solar, Utility",
-    //     "Solar, Commercial",
-    //     "Solar, Industrial"
-    // ];
-
-    // if (response.direction === "down") {
-
-    //     // update selected line colors
-    //     plot.selectAll("path")
-    //         .transition()
-    //         .duration(0.5 * DURATION)
-    //         .attr("stroke", function(d) {
-    //             const id = this.getAttribute('id');
-    //             if (solarLabels.includes(id)) {
-    //                 return THEME_ORANGE;
-    //             } else if (id === "Solar, Residential") {
-    //                 return THEME_PURPLE;
-    //             } else {
-    //                 return THEME_GREY;
-    //             }
-    //         });
-
-    // } else {
-
-    //     // transition out points
-    //     plot.selectAll(".points")
-    //         .transition()
-    //         .duration(DURATION)
-    //         .attr("r", 0)
-    //         .remove();
-
-    //     // transition out point labels
-    //     plot.selectAll(".pointLabel")
-    //         .transition()
-    //         .duration(DURATION)
-    //         .style("opacity", 0)
-    //         .remove();
-
-    //     makePlot1(data, response);
-
-    //     // update selected line colors
-    //     plot.selectAll("path")
-    //         .transition()
-    //         .duration(DURATION)
-    //         .attr("stroke", function(d) {
-    //             const id = this.getAttribute('id');
-    //             if (solarLabels.includes(id)) {
-    //                 return THEME_ORANGE;
-    //             } else if (id === "Solar, Residential") {
-    //                 return THEME_PURPLE;
-    //             } else {
-    //                 return THEME_GREY;
-    //             }
-    //         });
-
-    // }
-
-    // /**********************
-    // ***** LINE LABELS *****
-    // **********************/
-
-    // // update line label colors
-    // plot.selectAll(".lineLabel")
-    //     .transition()
-    //     .duration(0.5 * DURATION)
-    //     .attr("fill", function(d) {
-    //         const id = this.getAttribute('id');
-    //         if (solarLabels.includes(id)) {
-    //             return THEME_ORANGE;
-    //         } else if (id === "Solar, Residential") {
-    //             return THEME_PURPLE;
-    //         } else {
-    //             return THEME_GREY;
-    //         }
-    //     });
 
 
 

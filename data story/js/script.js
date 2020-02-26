@@ -111,10 +111,10 @@ function handleStepEnter(response) {
             drawBarChartA(data_2, response);
             break;
         case 5:
-            drawBarChartB(data_2, response);
+            drawLongBarChart(data_3, response);
             break;
         case 6:
-            drawLongBarChart(data_3, response);
+            //no nothing
             break;
         case 7:
             //no nothing

@@ -141,11 +141,10 @@ function drawRangeChartA(data, response) {
     /******************
     ***** TOOLTIP *****
     *******************/
-    var div = d3.select("#chart")
-                .append("div")
-                .attr("class", "tooltipRangeChart")
+
+    var div = d3.select(".tooltipRangeChart")
                 .style("opacity", 0)
-   
+    
    
    
    
@@ -219,8 +218,8 @@ function drawRangeChartA(data, response) {
                     
                     div.style("opacity", 1)
                         //.text([d["Min"]])
-                        .html("<strong>Minimun</strong>:"+ d["Min"])
-                        .style("left", (xScale(d["Min"]) + 86) + "px")
+                        .html("<strong>Minimun</strong>: "+ d["Min"])
+                        .style("left", (xScale(d["Min"]) + 86 ) + "px")
                         .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
                     })              
                 .on("mouseleave", function(d) { 
@@ -241,8 +240,8 @@ function drawRangeChartA(data, response) {
                     
                     div.style("opacity", 1)
                         //.text([d["Max"]])
-                        .html("<strong>Maximun</strong>:"+ d["Max"])
-                        .style("left", (xScale(d["Max"]) + 86) + "px")
+                        .html("<strong>Maximun</strong>: "+ d["Max"])
+                        .style("left", (xScale(d["Max"]) + 79) + "px")
                         .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
                     })              
                 .on("mouseleave", function(d) { 
