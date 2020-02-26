@@ -1,9 +1,6 @@
 /*
-SHINING A LIGHT ON US HOUSEHOLD SOLAR ENERGY GENERATION
-JONATHAN TAN
-MASTER JS FILE
-
-AS OF MARCH 21, 2019
+ePIRLS data story
+Yuqi Liao
 
 LIBRARIES LOADED IN GLOBAL:
     - d3
@@ -12,6 +9,7 @@ LIBRARIES LOADED IN GLOBAL:
     - stickyfill
     - topojson@3
     - d3-legend
+    - ...
 */
 
 /*

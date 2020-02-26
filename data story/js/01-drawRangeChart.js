@@ -136,7 +136,7 @@ function drawRangeChart(data, response) {
         .attr("y", height - 15)
         .attr("text-anchor", "start")
         .attr("class", "captionText")
-
+        
 
     /****************
     ***** LOOP  *****
@@ -217,6 +217,7 @@ function drawRangeChart(data, response) {
             .style("opacity", 0)
             .style("stroke", "#4A4A4A")
             .style("stroke-width", "1px");
+            
 
         plot.selectAll(".circleRight".concat(i))
             .data(filteredData)
@@ -235,17 +236,24 @@ function drawRangeChart(data, response) {
         if (response.direction === "up") { //i.e. if moving from second plot (range plot with dots) to here
 
             plot.selectAll(".line".concat(i))
-                .style("opacity", 0)
-                .attr("x2", d => xScale(d["Min"]));
+                .transition()
+                .duration(DURATION)
+                    .attr("x2", d => xScale(d["Min"]))
+                    .style("opacity", 0);
+                    
                 
 
             plot.selectAll(".circleLeft".concat(i))
-                .style("opacity", 0);
+                .transition()
+                .duration(DURATION)    
+                    .style("opacity", 0);
                 
 
             plot.selectAll(".circleRight".concat(i))
-                .style("opacity", 0)
-                .attr("cx", d => xScale(d["Min"]));
+                .transition()
+                .duration(DURATION)
+                    .attr("cx", d => xScale(d["Min"]))
+                    .style("opacity", 0);
                 
         }
             
@@ -274,6 +282,9 @@ function drawRangeChart(data, response) {
         };
 
     }
+
+    
+    
 
     
 

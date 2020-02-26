@@ -65,6 +65,15 @@ function drawRangeChartB(data, response) {
         .data([{"label": "Minimun and maximun number of ad-clicks by education system and module"}])
         .text(function(d) {return d.label;})
 
+    /******************
+    ***** TOOLTIP *****
+    *******************/
+   var div = d3.select("#chart")
+   .append("div")
+   .attr("class", "tooltip")
+   .style("opacity", 0)
+
+
 
     /*******************
     ***** SHOW BOX *****
@@ -176,6 +185,27 @@ function drawRangeChartB(data, response) {
             .transition()
             .delay(DURATION)
                 .style("opacity", 1);
+        
+        plot.selectAll(".circleLeft".concat(i))
+            //.style("opacity", 1)
+            .on("mouseenter", function(d) {
+                //console.log(d);
+                d3.select(this)
+                    .style("fill", "#F24D29")
+                    .style("stroke", "#F24D29");
+                
+                div.style("opacity", 1)
+                    //.text([d["Min"]])
+                    .html("<strong>Minimun</strong>:"+ d["Min"])
+                    .style("left", (xScale(d["Min"]) + 86) + "px")
+                    .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
+                })              
+            .on("mouseleave", function(d) { 
+                d3.select(this)
+                    .style("fill", "maroon")
+                    .style("stroke", "maroon");
+                div.style("opacity", 0); 
+                })
 
         plot.selectAll(".circleRight".concat(i))
             .data(filteredData)
@@ -194,6 +224,27 @@ function drawRangeChartB(data, response) {
             .duration(DURATION)
                 .attr("cx", d => xScale(d["Max"]))
                 .style("opacity", 1);
+        
+        plot.selectAll(".circleRight".concat(i))
+            //.style("opacity", 1)
+            .on("mouseenter", function(d) {
+                //console.log(d);
+                d3.select(this)
+                .style("fill", "#F24D29")
+                .style("stroke", "#F24D29");
+                
+                div.style("opacity", 1)
+                    //.text([d["Max"]])
+                    .html("<strong>Maximun</strong>:"+ d["Max"])
+                    .style("left", (xScale(d["Max"]) + 86) + "px")
+                    .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
+                })              
+            .on("mouseleave", function(d) { 
+                d3.select(this)
+                    .style("fill", "maroon")
+                    .style("stroke", "maroon");
+                div.style("opacity", 0); 
+                });
         }
 
     }

@@ -137,7 +137,18 @@ function drawRangeChartA(data, response) {
         .attr("text-anchor", "start")
         .attr("class", "captionText")
 
-
+    
+    /******************
+    ***** TOOLTIP *****
+    *******************/
+    var div = d3.select("#chart")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0)
+   
+   
+   
+   
     /****************
     ***** LOOP  *****
     *****************/
@@ -199,11 +210,47 @@ function drawRangeChartA(data, response) {
                     .attr("x2", d => xScale(d["Max"]));
 
             plot.selectAll(".circleLeft".concat(i))
-                .style("opacity", 1);
+                .style("opacity", 1)
+                .on("mouseenter", function(d) {
+                    //console.log(d);
+                    d3.select(this)
+                        .style("fill", "#F24D29")
+                        .style("stroke", "#F24D29");
+                    
+                    div.style("opacity", 1)
+                        //.text([d["Min"]])
+                        .html("<strong>Minimun</strong>:"+ d["Min"])
+                        .style("left", (xScale(d["Min"]) + 86) + "px")
+                        .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
+                    })              
+                .on("mouseleave", function(d) { 
+                    d3.select(this)
+                        .style("fill", "maroon")
+                        .style("stroke", "maroon");
+                    div.style("opacity", 0); 
+                    })
                 
 
             plot.selectAll(".circleRight".concat(i))
                 .style("opacity", 1)
+                .on("mouseenter", function(d) {
+                    //console.log(d);
+                    d3.select(this)
+                    .style("fill", "#F24D29")
+                    .style("stroke", "#F24D29");
+                    
+                    div.style("opacity", 1)
+                        //.text([d["Max"]])
+                        .html("<strong>Maximun</strong>:"+ d["Max"])
+                        .style("left", (xScale(d["Max"]) + 86) + "px")
+                        .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
+                    })              
+                .on("mouseleave", function(d) { 
+                    d3.select(this)
+                        .style("fill", "maroon")
+                        .style("stroke", "maroon");
+                    div.style("opacity", 0); 
+                    })
                 .transition()
                 .duration(DURATION)
                     .attr("cx", d => xScale(d["Max"]));
@@ -213,17 +260,17 @@ function drawRangeChartA(data, response) {
         ***** HIGHLIGHT BOX *****
         *************************/
 
-        if (Object.keys(moduleVars[i])[0] === "en11radz" & plot.selectAll(".highlightBox".concat(i)).empty()) {
-            plot.append("rect")
-                .attr("class", "highlightBox highlightBox".concat(i))
-                .attr("x", xScale(xMin) - 7)
-                .attr("y", yScale("Chinese Taipei") )
-                .attr("width", xScale(xMax) - xScale(xMin) + 7 * 2)
-                .attr("height", yScale.bandwidth() )
-                .attr("fill", "lightgray")
-                .style("opacity", 0)
-                .lower();
-        }
+        // if (Object.keys(moduleVars[i])[0] === "en11radz" & plot.selectAll(".highlightBox".concat(i)).empty()) {
+        //     plot.append("rect")
+        //         .attr("class", "highlightBox highlightBox".concat(i))
+        //         .attr("x", xScale(xMin) - 7)
+        //         .attr("y", yScale("Chinese Taipei") )
+        //         .attr("width", xScale(xMax) - xScale(xMin) + 7 * 2)
+        //         .attr("height", yScale.bandwidth() )
+        //         .attr("fill", "lightgray")
+        //         .style("opacity", 0)
+        //         .lower();
+        // }
 
         if (response.direction === "up") {
         d3.selectAll(".highlightBox")
