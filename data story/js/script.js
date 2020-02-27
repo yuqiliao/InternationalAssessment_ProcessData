@@ -117,10 +117,10 @@ function handleStepEnter(response) {
             //no nothing
             break;
         case 7:
-            //no nothing
+            drawTwoBars(data_4, response);
             break;
         case 8:
-            drawTwoBars(data_4, response);
+             //no nothing
             break;
         case 9:
             drawTwoBarsWithWaterFalls(data_5, response);
