@@ -282,6 +282,10 @@ a:hover { border-bottom: 1.5px dotted; }
     background-color: white;
 }
 
+/* d3-annotation label */
+.annotation-note-label{
+    font-family: 'Open Sans', sans-serif;
+}
 
 /* SCROLL TO CONTINUE message */
 #scrollMsg {

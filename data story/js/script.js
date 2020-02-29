@@ -120,20 +120,20 @@ function handleStepEnter(response) {
             drawTwoBars(data_4, response);
             break;
         case 8:
-             //no nothing
-            break;
-        case 9:
             drawTwoBarsWithWaterFalls(data_5, response);
             break;
-        case 10:
+        case 9:
             drawTwoBarsWithWaterFallsA(data_5, response);
             break;
-        case 11:
+        case 10:
             drawTwoBarsWithWaterFallsB(data_6, response);
             break;
-        case 12:
+        case 11:
             drawTwoBarsWithWaterFallsC(data_6, response);
             break;
+        // case 12:
+        //     //no nothing
+        //     break;
     }
 
     // redraw chart upon display

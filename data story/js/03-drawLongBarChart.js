@@ -109,6 +109,12 @@ function drawLongBarChart(data, response) {
     //         .tickFormat("")
     //     );
 
+    /******************
+    ***** TOOLTIP *****
+    *******************/
+    var div = d3.select(".tooltipBarChart")
+    .style("opacity", 0)
+
     /***************************************
     ***** LINES , CIRCLES, RECTS *****
     ***************************************/
@@ -139,6 +145,24 @@ function drawLongBarChart(data, response) {
             .attr("width", function(d){
                 return xScale(d["PCT"]) - xScale(0)
             });
+
+
+    plot.selectAll(".rectLong")
+    .on("mouseenter", function(d) {
+        d3.select(this)
+            .style("fill", "#F24D29")
+        
+        div.style("opacity", 1)
+            //.text([d["Min"]])
+            .html(d3.format(".1f")(d["PCT"]) + "%")
+            .style("left", (xScale(d["PCT"]) + 142) + "px")
+            .style("top", (yScale(d[yGroup]) + 40) + "px")
+        })              
+    .on("mouseleave", function(d) { 
+        d3.select(this)
+            .style("fill", "blue")
+        div.style("opacity", 0)
+        })
 
 
     
@@ -174,103 +198,5 @@ function drawLongBarChart(data, response) {
         .style("opacity", 0)    
 
 
-    /****************
-    ***** LOOP  *****
-    *****************/
-    // var i;
-    // for (i = 0; i < moduleVars.length; i ++){
-    //     /***********************
-    //     ***** X & Y SCALES *****
-    //     ***********************/
-    //     // console.log(i)
-    //     // console.log([xMin, xMax])
-    //     // console.log([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)])
-    //     let xScale = d3.scaleLinear()
-    //         .domain([xMin, xMax])
-    //         .range([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)]);
-
-        /***************************************
-        ***** X AXIS, AXIS LABEL, GRIDLINE *****
-        ***************************************/
-
-        // svg.select(".xAxis".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //     .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
-        //     .call(d3.axisBottom(xScale)
-        //         .ticks(4)
-        //         //.tickFormat(d3.format("d"))
-        //     );
-
-        // svg.select(".xGrid".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //     .attr("transform", `translate(${margin.left}, ${margin.top})`)
-        //     .call(d3.axisBottom(xScale)
-        //         .tickSize(plotHeight)
-        //         .ticks(3)
-        //         .tickFormat("")
-        //     );
-
-
-
-
-
-        
-
-
-
-    //     *******************************
-    //     ***** LINES , CIRCLES, RECTS*****
-    //     ********************************
-
-        // // Append g to hold lines
-        // var plot = svg.select("#plot")
-        //     .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-
-        // let filteredData = data.filter(d => d["Var"] === Object.keys(moduleVars[i])[0]);
-
-        // console.log(filteredData)
-
-        // plot.selectAll(".rect".concat(i))
-        //     .data(filteredData)
-        //     .enter() 
-        //     .append("rect")
-        //     .attr("class", "rect".concat(i))
-        //     .attr("x", d => xScale(0))
-        //     .attr("y", d => yScale(d[yGroup]))
-        //     .attr("height", yScale.bandwidth())
-        //     .style("fill", "blue")
-        //     .attr("width", 0)
-        //     .transition()
-        //     .delay(DURATION)//wait for the removal to happen first
-        //     .duration(DURATION)
-        //         .attr("width", function(d){
-        //             return xScale(d["PCT"]) - xScale(0)
-        //         });
-
-        // plot.selectAll(".line".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();
-
-        // plot.selectAll(".circleLeft".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();
-
-        // plot.selectAll(".circleRight".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();        
-
-    //}
-
     
-
-
 }

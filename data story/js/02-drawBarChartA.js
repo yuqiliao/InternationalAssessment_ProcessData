@@ -181,6 +181,12 @@ function drawBarChartA(data, response) {
        .attr("width", 0)
        .remove();
     
+    /******************
+    ***** TOOLTIP *****
+    *******************/
+   var div = d3.select(".tooltipBarChart")
+   .style("opacity", 0)
+    
 
     /****************
     ***** LOOP  *****
@@ -259,6 +265,23 @@ function drawBarChartA(data, response) {
                 .attr("width", function(d){
                     return xScale(d["PCT"]) - xScale(0)
                 });
+
+        plot.selectAll(".rect".concat(i))
+        .on("mouseenter", function(d) {
+            d3.select(this)
+                .style("fill", "#F24D29")
+            
+            div.style("opacity", 1)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["PCT"]) + "%")
+                .style("left", (xScale(d["PCT"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) + 40) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "blue")
+            div.style("opacity", 0)
+            })
 
         plot.selectAll(".line".concat(i))
             .transition()
