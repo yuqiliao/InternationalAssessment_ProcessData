@@ -112,6 +112,12 @@ function drawTwoBarsWithWaterFallsC(data, response) {
     //         .tickFormat("")
     //     );
 
+    /******************
+    ***** TOOLTIP *****
+    *******************/
+    var div = d3.select(".tooltipBarChart")
+    .style("opacity", 0)
+
     /***************************************
     ***** LINES , CIRCLES, RECTS *****
     ***************************************/
@@ -146,126 +152,82 @@ function drawTwoBarsWithWaterFallsC(data, response) {
         .duration(DURATION)
             .style("opacity", 0.3)
 
+    plot.selectAll(".rectLongNoClick2")
+    .on("mouseenter", function(d) {
+        // d3.select(this)
+        //     .style("fill", "#F24D29")
+        
+        div.style("opacity", 0)
+            //.text([d["Min"]])
+            .html(d3.format(".1f")(d["Coef_startToLogout_noClick_min"]))
+            .style("left", (xScale(d["Coef_startToLogout_noClick_min"]) + 142) + "px")
+            .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+        })              
+    .on("mouseleave", function(d) { 
+        d3.select(this)
+            .style("fill", "aqua")
+        div.style("opacity", 0)
+        })
+
     plot.selectAll(".rectLongYesClick2")
         .transition()
         .duration(DURATION)
             .style("opacity", 0.3)
+
+    plot.selectAll(".rectLongYesClick2")
+    .on("mouseenter", function(d) {
+        // d3.select(this)
+        //     .style("fill", "#F24D29")
+        
+        div.style("opacity", 0)
+            //.text([d["Min"]])
+            .html(d3.format(".1f")(d["Coef_startToLogout_yesClick_min"]))
+            .style("left", (xScale(d["Coef_startToLogout_yesClick_min"]) + 142) + "px")
+            .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+        })              
+    .on("mouseleave", function(d) { 
+        d3.select(this)
+            .style("fill", "khaki")
+        div.style("opacity", 0)
+        }) 
 
     plot.selectAll(".rectLongGap2")
         .transition()
         .duration(DURATION)
             .style("opacity", 1)
 
+    plot.selectAll(".rectLongGap2")
+    .on("mouseenter", function(d) {
+        d3.select(this)
+            .style("fill", "#F24D29")
+        
+        div.style("opacity", 1)
+            //.text([d["Min"]])
+            .html(d3.format(".1f")(Math.abs(d["Coef_startToLogout_gap_min"])))
+            .style("left", function(d){
+                if(d["Coef_startToLogout_gap_min"] < 0){
+                    return (xScale(d["Coef_startToLogout_yesClick_min"]) + 142 + "px")
+                } else {
+                    return (xScale(d["Coef_startToLogout_noClick_min"]) + 142 + "px")
+                }
+            })
+            .style("top", function(d){
+                if(d["Coef_startToLogout_gap_min"] < 0){
+                    return ((yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+                } else {
+                    return ((yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+                }
+            })
+        })              
+    .on("mouseleave", function(d) { 
+        d3.select(this)
+            .style("fill", "indianred")
+        div.style("opacity", 0)
+        }) 
+
     
 
 
-    // plot.append("line")
-    //     .attr("class", "lineAverageNoClick")
-    //     .attr("x1", xScale(537.5))
-    //     .attr("x2", xScale(537.5))
-    //     .attr("y1", 0)
-    //     .attr("y2", plotHeight)
-    //     .attr("stroke", "green")
-    //     .attr("stroke-width", "2px")
-    //     .attr("stroke-opacity", 0)
-    //     .lower()
-    //     .transition()
-    //     .delay(DURATION * 3.5)
-    //     .duration(DURATION)
-    //         .attr("stroke-opacity", 1)
-            
-
-    //  plot.append("line")
-    //     .attr("class", "lineAverageYesClick")
-    //     .attr("x1", xScale(502.1))
-    //     .attr("x2", xScale(502.1))
-    //     .attr("y1", 0)
-    //     .attr("y2", plotHeight)
-    //     .attr("stroke", "red")
-    //     .attr("stroke-width", "2px")
-    //     .attr("stroke-opacity", 0)
-    //     .lower()
-    //     .transition()
-    //     .delay(DURATION * 3)
-    //     .duration(DURATION)
-    //         .attr("stroke-opacity", 1)
-
-
-    // // Annotations for lines
-    // const type = d3.annotationCalloutCurve
-
-    // const annotationsNoClicks = [
-    //   {
-    //     note: {
-    //       label: "Average score for students who did not click on ads"
-    //       //bgPadding: 20,
-    //       //title: "Annotation title"
-    //     },
-    //     color:"green",
-    //     x: xScale(537.5),
-    //     y: yScale("United Arab Emirates"),
-    //     dy: -50,
-    //     dx: 100,
-    //     connector: {
-    //       points: 1
-    //     }
-    //   }
-    // ]
-
-    // // Add annotation to the chart
-    // const makeAnnotationsNoClicks = d3.annotation()
-    //     //.editMode(true)
-    //     //.notePadding(15)
-    //     .type(type)
-    //     .annotations(annotationsNoClicks)
-
-
-    // d3.select("#plot")
-    //   .append("g")
-    //   .call(makeAnnotationsNoClicks)
-    //   .attr("opacity", 0)
-    //   .transition()
-    //     .delay(DURATION * 3.5)
-    //     .duration(DURATION)
-    //         .attr("opacity", 1)
-
-
-
-
-
-    // const annotationsYesClicks = [
-    //   {
-    //     note: {
-    //       label: "Average score for students who clicked on ads"
-    //       //bgPadding: 20,
-    //       //title: "Annotation title"
-    //     },
-    //     color:"red",
-    //     x: xScale(502.1),
-    //     y: yScale("Abu Dhabi, UAE"),
-    //     dy: -50,
-    //     dx: 100 + (537.5 - 502.1),
-    //     connector: {
-    //       points: 1
-    //     }
-    //   }
-    // ]
-
-    // // Add annotation to the chart
-    // const makeAnnotationsYesClicks = d3.annotation()
-    //     //.editMode(true)
-    //     //.notePadding(15)
-    //     .type(type)
-    //     .annotations(annotationsYesClicks)
-    
-    // d3.select("#plot")
-    //   .append("g")
-    //   .call(makeAnnotationsYesClicks)
-    //   .attr("opacity", 0)
-    //   .transition()
-    //     .delay(DURATION * 3)
-    //     .duration(DURATION)
-    //         .attr("opacity", 1)
     
 
     
@@ -301,101 +263,7 @@ function drawTwoBarsWithWaterFallsC(data, response) {
         .style("stroke-opacity", 0)    
 
 
-    /****************
-    ***** LOOP  *****
-    *****************/
-    // var i;
-    // for (i = 0; i < moduleVars.length; i ++){
-    //     /***********************
-    //     ***** X & Y SCALES *****
-    //     ***********************/
-    //     // console.log(i)
-    //     // console.log([xMin, xMax])
-    //     // console.log([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)])
-    //     let xScale = d3.scaleLinear()
-    //         .domain([xMin, xMax])
-    //         .range([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)]);
-
-        /***************************************
-        ***** X AXIS, AXIS LABEL, GRIDLINE *****
-        ***************************************/
-
-        // svg.select(".xAxis".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //     .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
-        //     .call(d3.axisBottom(xScale)
-        //         .ticks(4)
-        //         //.tickFormat(d3.format("d"))
-        //     );
-
-        // svg.select(".xGrid".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //     .attr("transform", `translate(${margin.left}, ${margin.top})`)
-        //     .call(d3.axisBottom(xScale)
-        //         .tickSize(plotHeight)
-        //         .ticks(3)
-        //         .tickFormat("")
-        //     );
-
-
-
-
-
-        
-
-
-
-    //     *******************************
-    //     ***** LINES , CIRCLES, RECTS*****
-    //     ********************************
-
-        // // Append g to hold lines
-        // var plot = svg.select("#plot")
-        //     .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-
-        // let filteredData = data.filter(d => d["Var"] === Object.keys(moduleVars[i])[0]);
-
-        // console.log(filteredData)
-
-        // plot.selectAll(".rect".concat(i))
-        //     .data(filteredData)
-        //     .enter() 
-        //     .append("rect")
-        //     .attr("class", "rect".concat(i))
-        //     .attr("x", d => xScale(0))
-        //     .attr("y", d => yScale(d[yGroup]))
-        //     .attr("height", yScale.bandwidth())
-        //     .style("fill", "blue")
-        //     .attr("width", 0)
-        //     .transition()
-        //     .delay(DURATION)//wait for the removal to happen first
-        //     .duration(DURATION)
-        //         .attr("width", function(d){
-        //             return xScale(d["PCT"]) - xScale(0)
-        //         });
-
-        // plot.selectAll(".line".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();
-
-        // plot.selectAll(".circleLeft".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();
-
-        // plot.selectAll(".circleRight".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();        
-
-    //}
+    
 
     
 

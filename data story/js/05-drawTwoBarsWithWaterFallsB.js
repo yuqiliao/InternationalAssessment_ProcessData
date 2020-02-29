@@ -112,6 +112,12 @@ function drawTwoBarsWithWaterFallsB(data, response) {
     //         .tickFormat("")
     //     );
 
+    /******************
+    ***** TOOLTIP *****
+    *******************/
+    var div = d3.select(".tooltipBarChart")
+    .style("opacity", 0)
+
     /***************************************
     ***** LINES , CIRCLES, RECTS *****
     ***************************************/
@@ -124,7 +130,7 @@ function drawTwoBarsWithWaterFallsB(data, response) {
         .transition("width0")
         .duration(DURATION * 0.5)
             .style("opacity", 0)
-            //.remove();
+            .remove();
 
     // plot.selectAll(".rectLongNoClick")
     //     .transition()
@@ -159,6 +165,23 @@ function drawTwoBarsWithWaterFallsB(data, response) {
                     return xScale(d["Coef_startToLogout_noClick_min"]) - xScale(0)
                 });
 
+        plot.selectAll(".rectLongNoClick2")
+        .on("mouseenter", function(d) {
+            d3.select(this)
+                .style("fill", "#F24D29")
+            
+            div.style("opacity", 1)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["Coef_startToLogout_noClick_min"]))
+                .style("left", (xScale(d["Coef_startToLogout_noClick_min"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "aqua")
+            div.style("opacity", 0)
+            })  
+
         plot.selectAll(".rectLongYesClick2")
             .data(data)
             .enter() 
@@ -176,6 +199,23 @@ function drawTwoBarsWithWaterFallsB(data, response) {
                 .attr("width", function(d){
                     return xScale(d["Coef_startToLogout_yesClick_min"]) - xScale(0)
                 });
+
+        plot.selectAll(".rectLongYesClick2")
+        .on("mouseenter", function(d) {
+            d3.select(this)
+                .style("fill", "#F24D29")
+            
+            div.style("opacity", 1)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["Coef_startToLogout_yesClick_min"]))
+                .style("left", (xScale(d["Coef_startToLogout_yesClick_min"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "khaki")
+            div.style("opacity", 0)
+            }) 
 
         plot.selectAll(".rectLongGap2")
             .data(data)
@@ -202,6 +242,36 @@ function drawTwoBarsWithWaterFallsB(data, response) {
                 return xScale(Math.abs(d["Coef_startToLogout_gap_min"])) - xScale(0)
             })
             .style("opacity", 0)
+
+
+        plot.selectAll(".rectLongGap2")
+        .on("mouseenter", function(d) {
+            // d3.select(this)
+            //     .style("fill", "#F24D29")
+            
+            div.style("opacity", 0)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(Math.abs(d["Coef_startToLogout_gap_min"])))
+                .style("left", function(d){
+                    if(d["Coef_startToLogout_gap_min"] < 0){
+                        return (xScale(d["Coef_startToLogout_yesClick_min"]) + 142 + "px")
+                    } else {
+                        return (xScale(d["Coef_startToLogout_noClick_min"]) + 142 + "px")
+                    }
+                })
+                .style("top", function(d){
+                    if(d["Coef_startToLogout_gap_min"] < 0){
+                        return ((yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+                    } else {
+                        return ((yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+                    }
+                })
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "indianred")
+            div.style("opacity", 0)
+            }) 
      } else {
 
             plot.selectAll(".rectLongNoClick2, .rectLongYesClick2")
