@@ -207,7 +207,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
         
 
         plot.selectAll(".rectLongGap")
-            .data(data)
+            .data(data.filter(function(d){return d["IDCNTRY"] !== "Singapore"})) //filter out Singapore as it is not significant
             .enter() 
             .append("rect")
             .attr("class", "rectLongGap")

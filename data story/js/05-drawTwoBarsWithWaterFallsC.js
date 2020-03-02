@@ -126,11 +126,8 @@ function drawTwoBarsWithWaterFallsC(data, response) {
     var plot = svg.select("#plot")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // plot.selectAll(".rectLongNoClick, .rectLongYesClick, .rectLongGap")
-    //     .transition("width0")
-    //     .duration(DURATION * 0.5)
-    //         .style("opacity", 0)
-    //         //.remove();
+    plot.selectAll(".rectLongNoClick, .rectLongYesClick, .rectLongGap")
+            .remove();
 
     // plot.selectAll(".rectLongNoClick")
     //     .transition()
@@ -197,33 +194,29 @@ function drawTwoBarsWithWaterFallsC(data, response) {
             .style("opacity", 1)
 
     plot.selectAll(".rectLongGap2")
-    .on("mouseenter", function(d) {
-        d3.select(this)
-            .style("fill", "#F24D29")
-        
-        div.style("opacity", 1)
-            //.text([d["Min"]])
-            .html(d3.format(".1f")(Math.abs(d["Coef_startToLogout_gap_min"])))
-            .style("left", function(d){
-                if(d["Coef_startToLogout_gap_min"] < 0){
-                    return (xScale(d["Coef_startToLogout_yesClick_min"]) + 142 + "px")
-                } else {
-                    return (xScale(d["Coef_startToLogout_noClick_min"]) + 142 + "px")
-                }
-            })
-            .style("top", function(d){
-                if(d["Coef_startToLogout_gap_min"] < 0){
-                    return ((yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
-                } else {
-                    return ((yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
-                }
-            })
-        })              
-    .on("mouseleave", function(d) { 
-        d3.select(this)
-            .style("fill", "indianred")
-        div.style("opacity", 0)
-        }) 
+        .on("mouseenter", function(d) {
+            d3.select(this)
+                .style("fill", "#F24D29")
+
+
+            if(d["Coef_startToLogout_gap_min"] < 0){
+                div.style("opacity", 1)
+                    .html(d3.format(".1f")(Math.abs(d["Coef_startToLogout_gap_min"])))
+                    .style("left", (xScale(d["Coef_startToLogout_noClick_min"]) + 142) + "px")
+                    .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+
+            } else {
+                div.style("opacity", 1)
+                    .html(d3.format(".1f")(d["Coef_startToLogout_gap_min"]))
+                    .style("left", (xScale(d["Coef_startToLogout_yesClick_min"]) + 142) + "px")
+                    .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+            }
+            })            
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "indianred")
+            div.style("opacity", 0)
+            }) 
 
     
 

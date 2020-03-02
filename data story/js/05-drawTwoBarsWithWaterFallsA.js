@@ -132,9 +132,101 @@ function drawTwoBarsWithWaterFallsA(data, response) {
             .style("opacity", 0)
             .remove();
 
-    
+    if (response.direction === "up") {
+        plot.selectAll(".rectLongNoClick")
+            .data(data)
+            .enter() 
+            .append("rect")
+            .attr("class", "rectLongNoClick")
+            .attr("x", d => xScale(0))
+            .attr("y", d => yScale(d[yGroup]) - yScale.bandwidth()*0.4)
+            .attr("height", yScale.bandwidth()*0.8)
+            .style("fill", "green")
+            .style("opacity", 0.3)
+            .attr("width", 0)
+            .transition()
+            .delay(DURATION * 0.5)//wait for the removal to happen first
+            .duration(DURATION)
+                .attr("width", function(d){
+                    return xScale(d["MEAN.NO"]) - xScale(0)
+                });
 
-    plot.selectAll(".rectLongNoClick")
+        plot.selectAll(".rectLongNoClick")
+        .on("mouseenter", function(d) {
+            // d3.select(this)
+            //     .style("fill", "#F24D29")
+            
+            div.style("opacity", 0)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["MEAN.NO"]))
+                .style("left", (xScale(d["MEAN.NO"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "green")
+            div.style("opacity", 0)
+            })  
+
+        plot.selectAll(".rectLongYesClick")
+            .data(data)
+            .enter() 
+            .append("rect")
+            .attr("class", "rectLongYesClick")
+            .attr("x", d => xScale(0))
+            .attr("y", d => yScale(d[yGroup]) + yScale.bandwidth()*0.4)
+            .attr("height", yScale.bandwidth()*0.8)
+            .style("fill", "red")
+            .style("opacity", 0.3)
+            .attr("width", 0)
+            .transition()
+            .delay(DURATION * 0.5)//wait for the removal to happen first
+            .duration(DURATION)
+                .attr("width", function(d){
+                    return xScale(d["MEAN.YES"]) - xScale(0)
+                });
+                
+        plot.selectAll(".rectLongYesClick")
+        .on("mouseenter", function(d) {
+            // d3.select(this)
+            //     .style("fill", "#F24D29")
+            
+            div.style("opacity", 0)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["MEAN.YES"]))
+                .style("left", (xScale(d["MEAN.YES"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "red")
+            div.style("opacity", 0)
+            }) 
+        
+
+        plot.selectAll(".rectLongGap")
+            .data(data.filter(function(d){return d["IDCNTRY"] !== "Singapore"})) //filter out Singapore as it is not significant
+            .enter() 
+            .append("rect")
+            .attr("class", "rectLongGap")
+            .attr("x", d => xScale(d["MEAN.YES"]))
+            .attr("y", d => yScale(d[yGroup]) + yScale.bandwidth()*0.4)
+            .attr("height", yScale.bandwidth()*0.8)
+            .style("fill", "yellow")
+            .attr("width", function(d){
+                return xScale(d["MEAN.GAP"]) - xScale(0)
+            })
+            .style("opacity", 0)
+
+        plot.selectAll(".rectLongGap")
+        .transition()
+        .delay(DURATION)
+        .duration(DURATION)
+            .style("opacity", 1)
+
+    } else {
+
+        plot.selectAll(".rectLongNoClick")
         .transition()
         .duration(DURATION)
             .style("opacity", 0.3)
@@ -178,6 +270,15 @@ function drawTwoBarsWithWaterFallsA(data, response) {
         div.style("opacity", 0)
         }) 
 
+    plot.selectAll(".rectLongGap")
+        .transition()
+        .duration(DURATION)
+            .style("opacity", 1)
+
+    }
+
+    
+
     // THIS didn't do the trick of hiding the tool tip when the bar opacity is not 1. I think it is because I used transition above, so the opacity of the bar DOES have a opacity of 1, but then got transitioned to 0.3, which is not captured by the if statement
     // console.log(document.getElementsByClassName("rectLongYesClick")["0"])
     // if(document.getElementsByClassName("rectLongYesClick")["0"].style.opacity === "1"){
@@ -199,10 +300,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
     //         }) 
     // }
 
-    plot.selectAll(".rectLongGap")
-        .transition()
-        .duration(DURATION)
-            .style("opacity", 1)
+    
 
     plot.selectAll(".rectLongGap")
     .on("mouseenter", function(d) {

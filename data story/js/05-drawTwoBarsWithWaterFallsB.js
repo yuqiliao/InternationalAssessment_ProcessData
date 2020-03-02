@@ -127,7 +127,7 @@ function drawTwoBarsWithWaterFallsB(data, response) {
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
     plot.selectAll(".rectLongNoClick, .rectLongYesClick, .rectLongGap")
-        .transition("width0")
+        .transition()
         .duration(DURATION * 0.5)
             .style("opacity", 0)
             .remove();
@@ -218,7 +218,7 @@ function drawTwoBarsWithWaterFallsB(data, response) {
             }) 
 
         plot.selectAll(".rectLongGap2")
-            .data(data)
+            .data(data.filter(function(d){return d["IDCNTRY"] === "Italy" | d["IDCNTRY"] === "United Arab Emirates" | d["IDCNTRY"] === "Abu Dhabi, UAE"})) //keep only these three jurisdictions as others are not significant
             .enter() 
             .append("rect")
             .attr("class", "rectLongGap2")
@@ -245,33 +245,29 @@ function drawTwoBarsWithWaterFallsB(data, response) {
 
 
         plot.selectAll(".rectLongGap2")
-        .on("mouseenter", function(d) {
+            .on("mouseenter", function(d) {
             // d3.select(this)
             //     .style("fill", "#F24D29")
-            
-            div.style("opacity", 0)
-                //.text([d["Min"]])
-                .html(d3.format(".1f")(Math.abs(d["Coef_startToLogout_gap_min"])))
-                .style("left", function(d){
-                    if(d["Coef_startToLogout_gap_min"] < 0){
-                        return (xScale(d["Coef_startToLogout_yesClick_min"]) + 142 + "px")
-                    } else {
-                        return (xScale(d["Coef_startToLogout_noClick_min"]) + 142 + "px")
-                    }
-                })
-                .style("top", function(d){
-                    if(d["Coef_startToLogout_gap_min"] < 0){
-                        return ((yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
-                    } else {
-                        return ((yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
-                    }
-                })
-            })              
-        .on("mouseleave", function(d) { 
-            d3.select(this)
-                .style("fill", "indianred")
-            div.style("opacity", 0)
-            }) 
+
+
+            if(d["Coef_startToLogout_gap_min"] < 0){
+                div.style("opacity", 0)
+                    .html(d3.format(".1f")(d["Coef_startToLogout_gap_min"]))
+                    .style("left", (xScale(d["Coef_startToLogout_noClick_min"]) + 142) + "px")
+                    .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+
+            } else {
+                div.style("opacity", 0)
+                    .html(d3.format(".1f")(d["Coef_startToLogout_gap_min"]))
+                    .style("left", (xScale(d["Coef_startToLogout_yesClick_min"]) + 142) + "px")
+                    .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+            }
+            })            
+            .on("mouseleave", function(d) { 
+                d3.select(this)
+                    .style("fill", "indianred")
+                div.style("opacity", 0)
+                }) 
      } else {
 
             plot.selectAll(".rectLongNoClick2, .rectLongYesClick2")
