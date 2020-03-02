@@ -86,8 +86,8 @@ function drawRangeChart(data, response) {
     svg.select(".yAxis")
         .attr("transform", `translate(${margin.left}, ${margin.top})`)
         .call(d3.axisLeft(yScale)
-            .tickSize(3)
-            .tickPadding(0))
+            .tickSize(5)
+            .tickPadding(5))
         .style("text-anchor", "end")
         .style("alignment-baseline", "middle")
         //.style("font-weight", "bold")
@@ -111,7 +111,7 @@ function drawRangeChart(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Minimun and maximun number of ad-clicks by education system and module"}])
+        .data([{"label": "Minimun and maximun number of ad-clicks by module and education system"}])
         .enter()
         .append("text")
         .text(function(d) {return d.label;})
@@ -149,7 +149,7 @@ function drawRangeChart(data, response) {
         ***********************/
 
         let xScale = d3.scaleLinear()
-            .domain([xMin, xMax])
+            .domain([xMin, 600]) //because xMax is 604, replace it into 600 to make the xAxis look nicer
             .range([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)]);
 
         /***************************************
@@ -160,7 +160,6 @@ function drawRangeChart(data, response) {
             .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
             .call(d3.axisBottom(xScale)
                 .ticks(3)
-                //.tickFormat(d3.format("d"))
             );
 
         svg.select(".xGrid".concat(i))
@@ -213,10 +212,10 @@ function drawRangeChart(data, response) {
             .attr("class", "circleLeft".concat(i))
             .attr("cy", d => yScale(d[yGroup]) + yScale.bandwidth()/2 )
             .attr("cx", d => xScale(d["Min"]))
-            .attr("r", 4)
-            .style("fill", "maroon")
+            .attr("r", 4.5)
+            // .style("fill", "maroon")
             .style("opacity", 0)
-            .style("stroke", "#4A4A4A")
+            // .style("stroke", "#4A4A4A")
             .style("stroke-width", "1px");
             
 
@@ -226,10 +225,10 @@ function drawRangeChart(data, response) {
             .append("circle")
             .attr("class", "circleRight".concat(i))
             .attr("cy", d => yScale(d[yGroup]) + yScale.bandwidth()/2 )
-            .attr("r", 4)
-            .style("fill", "maroon")
+            .attr("r", 4.5)
+            // .style("fill", "maroon")
             .style("opacity", 1)
-            .style("stroke", "#4A4A4A")
+            // .style("stroke", "#4A4A4A")
             .style("stroke-width", "1px")
             .attr("cx", d => xScale(d["Min"]))
             .style("opacity", 0);
@@ -270,7 +269,7 @@ function drawRangeChart(data, response) {
                 .attr("y", yScale("Chinese Taipei") )
                 .attr("width", xScale(xMax) - xScale(xMin) + 7 * 2)
                 .attr("height", yScale.bandwidth() )
-                .attr("fill", "lightgray")
+                .attr("fill", "#1DACE8")
                 .style("opacity", 0)
                 .lower();
         }

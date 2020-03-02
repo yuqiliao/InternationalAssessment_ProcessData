@@ -175,6 +175,7 @@ h1 {
     font-family: "Open Sans ExtraBoldItalic";
     font-size: 44px;
     margin-bottom: 5px;
+    color:#1C366B;
 }
 
 /* Sub title */
@@ -203,11 +204,17 @@ p {
     line-height: 1.8em;
 }
 
-.listResearchQuestions{
+.author{
+    color:#1C366B;
+}
+
+.listResearchQuestions,
+.listFindings {
     font-family: "Open Sans SemiBold";
     font-size: 16px;
     line-height: 1.8em;
 }
+
 
 /*imagies and video*/ 
 .onlineReadingIcon {
@@ -325,8 +332,7 @@ a:hover { border-bottom: 1.5px dotted; }
 }
 
 /* Chart axis labels */
-.xLabel,
-.yLabel {
+.xLabel, .yLabel {
     font-family: "Open Sans SemiBold";
     font-size: 12px;
     color: #000000;
@@ -335,7 +341,7 @@ a:hover { border-bottom: 1.5px dotted; }
 /* Chart caption text */
 .captionText {
     font-family: "Open Sans Italic";
-    font-size: 8px;
+    font-size: 10px;
 }
 
 /* Line chart labels */
@@ -379,7 +385,7 @@ a:hover { border-bottom: 1.5px dotted; }
 /* Tick lines - transparent */
 .tick line,
 .domain {
-    color: #FFFFFF;
+    color: #000000;
 }
 
 /* Plot area gridlines */
@@ -395,44 +401,38 @@ a:hover { border-bottom: 1.5px dotted; }
     stroke-width: 0;
 }
 
-/* Bar chart - selected bars */
-.selectedRect {
-    stroke: #000000;
-    stroke-width: 1.5px;
-    fill: #FF810F;
+
+.circleLeft0, .circleLeft1, .circleLeft2, .circleLeft3, .circleLeft4,
+.circleRight0, .circleRight1, .circleRight2, .circleRight3, .circleRight4 {
+    fill: #1C366B;
+    stroke: #1C366B;
 }
 
-/* Map formatting */
-.map path {
-    fill: #FFFFFF;
-    stroke: #DDDDDD;
-    stroke-width: 1px;
+.rect0, .rect1, .rect2, .rect3, .rect4, .rect5, .rectLong {
+    fill: #1C366B;
 }
 
-/* Map - mousover highlight */
-.map path:hover {
-    fill: limegreen;
+.rectLongBoy{
+    fill: #1C366B;
 }
 
-/* Map - selected points */
-.selectedPoint {
-    stroke: #000000;
-    stroke-width: 1.5px;
+.rectLongGirl{
+    fill: #F24D29;
+}
+
+.rectLongNoClick, .rectLongNoClick2 {
+    fill: #1C366B;
+}
+
+.rectLongYesClick,  .rectLongYesClick{
+    fill: #1DACE8;
+}
+
+.rectLongGap, .rectLongGap2 {
+    fill: #F8DF4F;
 }
 
 
-
-/* dotplot annotation line */
-.dividingLine {
-    stroke: #BBBBBB;
-    stroke-dasharray: 10;
-}
-
-/* scatterplot regression line */
-.regressionLine {
-    stroke: #000000;
-    stroke-dasharray: 10;
-}
 
 /*******************
 ***** tooltips *****

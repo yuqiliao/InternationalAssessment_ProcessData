@@ -99,7 +99,7 @@ function svg_init() {
         .attr("text-anchor", "middle")
         .style("alignment-baseline", "bottom")
         .attr("x", (0.5 * (plotWidth + margin.left)))
-        .attr("y", margin.top + plotHeight + margin.bottom - 2);
+        .attr("y", margin.top + plotHeight + margin.bottom - 3);
 
 
     /**************************************

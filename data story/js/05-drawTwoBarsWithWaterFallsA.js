@@ -75,7 +75,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
         );
 
     svg.selectAll(".xLabel")
-        .data([{"label": "Percent of students who clicked ads"}])
+        .data([{"label": "Average score in online reading"}])
         .text(d => d.label);
 
 
@@ -96,8 +96,8 @@ function drawTwoBarsWithWaterFallsA(data, response) {
         .duration(DURATION)
             .attr("transform", `translate(${margin.left}, ${margin.top})`)
             .call(d3.axisLeft(yScale)
-                .tickSize(3)
-                .tickPadding(0))
+                .tickSize(5)
+                .tickPadding(5))
             .style("text-anchor", "end")
             .style("alignment-baseline", "middle")
             //.style("font-weight", "bold")
@@ -141,7 +141,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
             .attr("x", d => xScale(0))
             .attr("y", d => yScale(d[yGroup]) - yScale.bandwidth()*0.4)
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "green")
+            // .style("fill", "green")
             .style("opacity", 0.3)
             .attr("width", 0)
             .transition()
@@ -164,7 +164,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
             })              
         .on("mouseleave", function(d) { 
             d3.select(this)
-                .style("fill", "green")
+                .style("fill", "#1C366B")
             div.style("opacity", 0)
             })  
 
@@ -176,7 +176,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
             .attr("x", d => xScale(0))
             .attr("y", d => yScale(d[yGroup]) + yScale.bandwidth()*0.4)
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "red")
+            // .style("fill", "red")
             .style("opacity", 0.3)
             .attr("width", 0)
             .transition()
@@ -199,7 +199,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
             })              
         .on("mouseleave", function(d) { 
             d3.select(this)
-                .style("fill", "red")
+                .style("fill", "#1DACE8")
             div.style("opacity", 0)
             }) 
         
@@ -212,7 +212,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
             .attr("x", d => xScale(d["MEAN.YES"]))
             .attr("y", d => yScale(d[yGroup]) + yScale.bandwidth()*0.4)
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "yellow")
+            //.style("fill", "yellow")
             .attr("width", function(d){
                 return xScale(d["MEAN.GAP"]) - xScale(0)
             })
@@ -244,7 +244,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
         })              
     .on("mouseleave", function(d) { 
         d3.select(this)
-            .style("fill", "green")
+            .style("fill", "#1C366B")
         div.style("opacity", 0)
         })
 
@@ -266,7 +266,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
         })              
     .on("mouseleave", function(d) { 
         d3.select(this)
-            .style("fill", "red")
+            .style("fill", "#1DACE8")
         div.style("opacity", 0)
         }) 
 
@@ -315,7 +315,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
         })              
     .on("mouseleave", function(d) { 
         d3.select(this)
-            .style("fill", "yellow")
+            .style("fill", "#F8DF4F")
         div.style("opacity", 0)
         }) 
 
@@ -439,7 +439,7 @@ function drawTwoBarsWithWaterFallsA(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Pecent of students who clicked on ads by education system"}])
+        .data([{"label": "Average score of students by ad-clicking behavior and education system"}])
         .text(function(d) {return d.label;})
 
 

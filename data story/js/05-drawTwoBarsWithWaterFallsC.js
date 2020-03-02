@@ -1,7 +1,6 @@
 function drawTwoBarsWithWaterFallsC(data, response) {
     
     var data = data.sort( (a, b) => d3.descending(a["Coef_startToLogout_noClick_min"], b["Coef_startToLogout_noClick_min"]));
-    console.log(data);
     //data = data.sort( (a, b) => d3.descending(a["PCT"], b["PCT"]));
     //console.log(data);
     /**********************
@@ -76,7 +75,7 @@ function drawTwoBarsWithWaterFallsC(data, response) {
         );
 
     svg.selectAll(".xLabel")
-        .data([{"label": "Percent of students who clicked ads"}])
+        .data([{"label": "Average time spent (minutes)"}])
         .text(d => d.label);
 
 
@@ -97,8 +96,8 @@ function drawTwoBarsWithWaterFallsC(data, response) {
         .duration(DURATION)
             .attr("transform", `translate(${margin.left}, ${margin.top})`)
             .call(d3.axisLeft(yScale)
-                .tickSize(3)
-                .tickPadding(0))
+                .tickSize(5)
+                .tickPadding(5))
             .style("text-anchor", "end")
             .style("alignment-baseline", "middle")
             //.style("font-weight", "bold")
@@ -162,7 +161,7 @@ function drawTwoBarsWithWaterFallsC(data, response) {
         })              
     .on("mouseleave", function(d) { 
         d3.select(this)
-            .style("fill", "aqua")
+            .style("fill", "#1C366B")
         div.style("opacity", 0)
         })
 
@@ -184,7 +183,7 @@ function drawTwoBarsWithWaterFallsC(data, response) {
         })              
     .on("mouseleave", function(d) { 
         d3.select(this)
-            .style("fill", "khaki")
+            .style("fill", "#1DACE8")
         div.style("opacity", 0)
         }) 
 
@@ -214,7 +213,7 @@ function drawTwoBarsWithWaterFallsC(data, response) {
             })            
         .on("mouseleave", function(d) { 
             d3.select(this)
-                .style("fill", "indianred")
+                .style("fill", "#F8DF4F")
             div.style("opacity", 0)
             }) 
 
@@ -233,7 +232,7 @@ function drawTwoBarsWithWaterFallsC(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Pecent of students who clicked on ads by education system"}])
+        .data([{"label": "Average time spent by ad-clicking behavior and education system"}])
         .text(function(d) {return d.label;})
 
 

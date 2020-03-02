@@ -3,8 +3,8 @@ function drawTwoBars(data, response) {
                                 .sort( (a, b) => d3.descending(a["PCT"], b["PCT"])); //sorting here doesn't decide the actual order but it helps for me to see the order of this data in the console if needed
     var data_girl = data.filter(d => d["EqVar1Value"] === "GIRL")
                                 .sort( (a, b) => d3.ascending(a["PCT"], b["PCT"]));
-    console.log(data_boy);
-    console.log(data_girl);
+    // console.log(data_boy);
+    // console.log(data_girl);
 
     //data = data.sort( (a, b) => d3.descending(a["PCT"], b["PCT"]));
     //console.log(data);
@@ -80,7 +80,7 @@ function drawTwoBars(data, response) {
         );
 
     svg.selectAll(".xLabel")
-        .data([{"label": "Percent of students who clicked ads"}])
+        .data([{"label": "Percent of students who clicked on ads"}])
         .text(d => d.label);
 
 
@@ -101,8 +101,8 @@ function drawTwoBars(data, response) {
         .duration(DURATION)
             .attr("transform", `translate(${margin.left}, ${margin.top})`)
             .call(d3.axisLeft(yScale)
-                .tickSize(3)
-                .tickPadding(0))
+                .tickSize(5)
+                .tickPadding(5))
             .style("text-anchor", "end")
             .style("alignment-baseline", "middle")
             //.style("font-weight", "bold")
@@ -145,7 +145,7 @@ function drawTwoBars(data, response) {
         .attr("x", d => xScale(0))
         .attr("y", d => yScale(d[yGroup]) - yScale.bandwidth()*0.4)
         .attr("height", yScale.bandwidth()*0.8)
-        .style("fill", "blue")
+        //.style("fill", "blue")
         .attr("width", 0)
         .transition()
         .delay(DURATION * 0.5)//wait for the removal to happen first
@@ -157,17 +157,16 @@ function drawTwoBars(data, response) {
     plot.selectAll(".rectLongBoy")
     .on("mouseenter", function(d) {
         d3.select(this)
-            .style("fill", "#F24D29")
+            .style("fill", "#C4CFD0")
         
         div.style("opacity", 1)
-            //.text([d["Min"]])
             .html(d3.format(".1f")(d["PCT"]) + "%")
             .style("left", (xScale(d["PCT"]) + 142) + "px")
             .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
         })              
     .on("mouseleave", function(d) { 
         d3.select(this)
-            .style("fill", "blue")
+            .style("fill", "#1C366B")
         div.style("opacity", 0)
         })  
 
@@ -179,7 +178,7 @@ function drawTwoBars(data, response) {
         .attr("x", d => xScale(0))
         .attr("y", d => yScale(d[yGroup]) + yScale.bandwidth()*0.4)
         .attr("height", yScale.bandwidth()*0.8)
-        .style("fill", "pink")
+        //.style("fill", "pink")
         .attr("width", 0)
         .transition()
         .delay(DURATION * 0.5)//wait for the removal to happen first
@@ -191,7 +190,7 @@ function drawTwoBars(data, response) {
     plot.selectAll(".rectLongGirl")
     .on("mouseenter", function(d) {
         d3.select(this)
-            .style("fill", "#F24D29")
+            .style("fill", "#C4CFD0")
         
         div.style("opacity", 1)
             //.text([d["Min"]])
@@ -201,7 +200,7 @@ function drawTwoBars(data, response) {
         })              
     .on("mouseleave", function(d) { 
         d3.select(this)
-            .style("fill", "pink")
+            .style("fill", "#F24D29")
         div.style("opacity", 0)
         })  
 
@@ -215,7 +214,7 @@ function drawTwoBars(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Pecent of students who clicked on ads by education system"}])
+        .data([{"label": "Pecent of students who clicked on ads by gender and education system"}])
         .text(function(d) {return d.label;})
 
 

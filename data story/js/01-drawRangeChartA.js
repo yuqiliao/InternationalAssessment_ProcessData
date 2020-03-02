@@ -86,8 +86,8 @@ function drawRangeChartA(data, response) {
     svg.select(".yAxis")
         .attr("transform", `translate(${margin.left}, ${margin.top})`)
         .call(d3.axisLeft(yScale)
-            .tickSize(3)
-            .tickPadding(0))
+            .tickSize(5)
+            .tickPadding(5))
         .style("text-anchor", "end")
         .style("alignment-baseline", "middle")
         //.style("font-weight", "bold")
@@ -111,7 +111,7 @@ function drawRangeChartA(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Minimun and maximun number of ad-clicks by education system and module"}])
+        .data([{"label": "Minimun and maximun number of ad-clicks by module and education system"}])
         .enter()
         .append("text")
         .text(function(d) {return d.label;})
@@ -158,7 +158,7 @@ function drawRangeChartA(data, response) {
         ***********************/
 
         let xScale = d3.scaleLinear()
-            .domain([xMin, xMax])
+            .domain([xMin, 600]) //because xMax is 604, replace it into 600 to make the xAxis look nicer
             .range([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)]);
 
         /***************************************
@@ -224,8 +224,8 @@ function drawRangeChartA(data, response) {
                     })              
                 .on("mouseleave", function(d) { 
                     d3.select(this)
-                        .style("fill", "maroon")
-                        .style("stroke", "maroon");
+                        .style("fill", "#1C366B")
+                        .style("stroke", "#1C366B");
                     div.style("opacity", 0); 
                     })
                 
@@ -246,8 +246,8 @@ function drawRangeChartA(data, response) {
                     })              
                 .on("mouseleave", function(d) { 
                     d3.select(this)
-                        .style("fill", "maroon")
-                        .style("stroke", "maroon");
+                        .style("fill", "#1C366B")
+                        .style("stroke", "#1C366B");
                     div.style("opacity", 0); 
                     })
                 .transition()
@@ -259,17 +259,6 @@ function drawRangeChartA(data, response) {
         ***** HIGHLIGHT BOX *****
         *************************/
 
-        // if (Object.keys(moduleVars[i])[0] === "en11radz" & plot.selectAll(".highlightBox".concat(i)).empty()) {
-        //     plot.append("rect")
-        //         .attr("class", "highlightBox highlightBox".concat(i))
-        //         .attr("x", xScale(xMin) - 7)
-        //         .attr("y", yScale("Chinese Taipei") )
-        //         .attr("width", xScale(xMax) - xScale(xMin) + 7 * 2)
-        //         .attr("height", yScale.bandwidth() )
-        //         .attr("fill", "lightgray")
-        //         .style("opacity", 0)
-        //         .lower();
-        // }
 
         if (response.direction === "up") {
         d3.selectAll(".highlightBox")

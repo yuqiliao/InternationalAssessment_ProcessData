@@ -1,7 +1,6 @@
 function drawTwoBarsWithWaterFallsB(data, response) {
     
     var data = data.sort( (a, b) => d3.descending(a["Coef_startToLogout_noClick_min"], b["Coef_startToLogout_noClick_min"]));
-    console.log(data);
     //data = data.sort( (a, b) => d3.descending(a["PCT"], b["PCT"]));
     //console.log(data);
     /**********************
@@ -76,7 +75,7 @@ function drawTwoBarsWithWaterFallsB(data, response) {
         );
 
     svg.selectAll(".xLabel")
-        .data([{"label": "Percent of students who clicked ads"}])
+        .data([{"label": "Average time spent (minutes)"}])
         .text(d => d.label);
 
 
@@ -97,8 +96,8 @@ function drawTwoBarsWithWaterFallsB(data, response) {
         .duration(DURATION)
             .attr("transform", `translate(${margin.left}, ${margin.top})`)
             .call(d3.axisLeft(yScale)
-                .tickSize(3)
-                .tickPadding(0))
+                .tickSize(5)
+                .tickPadding(5))
             .style("text-anchor", "end")
             .style("alignment-baseline", "middle")
             //.style("font-weight", "bold")
@@ -155,7 +154,7 @@ function drawTwoBarsWithWaterFallsB(data, response) {
             .attr("x", d => xScale(0))
             .attr("y", d => yScale(d[yGroup]) - yScale.bandwidth()*0.4)
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "aqua")
+            .style("fill", "#1C366B")
             .style("opacity", 1)
             .attr("width", 0)
             .transition("width1")
@@ -165,22 +164,6 @@ function drawTwoBarsWithWaterFallsB(data, response) {
                     return xScale(d["Coef_startToLogout_noClick_min"]) - xScale(0)
                 });
 
-        plot.selectAll(".rectLongNoClick2")
-        .on("mouseenter", function(d) {
-            d3.select(this)
-                .style("fill", "#F24D29")
-            
-            div.style("opacity", 1)
-                //.text([d["Min"]])
-                .html(d3.format(".1f")(d["Coef_startToLogout_noClick_min"]))
-                .style("left", (xScale(d["Coef_startToLogout_noClick_min"]) + 142) + "px")
-                .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
-            })              
-        .on("mouseleave", function(d) { 
-            d3.select(this)
-                .style("fill", "aqua")
-            div.style("opacity", 0)
-            })  
 
         plot.selectAll(".rectLongYesClick2")
             .data(data)
@@ -190,7 +173,7 @@ function drawTwoBarsWithWaterFallsB(data, response) {
             .attr("x", d => xScale(0))
             .attr("y", d => yScale(d[yGroup]) + yScale.bandwidth()*0.4)
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "khaki")
+            .style("fill", "#1DACE8")
             .style("opacity", 1)
             .attr("width", 0)
             .transition("width1")
@@ -200,22 +183,6 @@ function drawTwoBarsWithWaterFallsB(data, response) {
                     return xScale(d["Coef_startToLogout_yesClick_min"]) - xScale(0)
                 });
 
-        plot.selectAll(".rectLongYesClick2")
-        .on("mouseenter", function(d) {
-            d3.select(this)
-                .style("fill", "#F24D29")
-            
-            div.style("opacity", 1)
-                //.text([d["Min"]])
-                .html(d3.format(".1f")(d["Coef_startToLogout_yesClick_min"]))
-                .style("left", (xScale(d["Coef_startToLogout_yesClick_min"]) + 142) + "px")
-                .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
-            })              
-        .on("mouseleave", function(d) { 
-            d3.select(this)
-                .style("fill", "khaki")
-            div.style("opacity", 0)
-            }) 
 
         plot.selectAll(".rectLongGap2")
             .data(data.filter(function(d){return d["IDCNTRY"] === "Italy" | d["IDCNTRY"] === "United Arab Emirates" | d["IDCNTRY"] === "Abu Dhabi, UAE"})) //keep only these three jurisdictions as others are not significant
@@ -237,14 +204,61 @@ function drawTwoBarsWithWaterFallsB(data, response) {
                 }
             })
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "indianred")
+            .style("fill", "#F8DF4F")
             .attr("width", function(d){
                 return xScale(Math.abs(d["Coef_startToLogout_gap_min"])) - xScale(0)
             })
             .style("opacity", 0)
 
+        
+     } else {
 
-        plot.selectAll(".rectLongGap2")
+            plot.selectAll(".rectLongNoClick2, .rectLongYesClick2")
+                .transition()
+                .duration(DURATION)
+                    .style("opacity", 1)
+
+             plot.selectAll(".rectLongGap2")
+                .transition()
+                .duration(DURATION)
+                    .style("opacity", 0)
+    }
+
+    plot.selectAll(".rectLongNoClick2")
+        .on("mouseenter", function(d) {
+            d3.select(this)
+                .style("fill", "#F24D29")
+            
+            div.style("opacity", 1)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["Coef_startToLogout_noClick_min"]))
+                .style("left", (xScale(d["Coef_startToLogout_noClick_min"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "#1C366B")
+            div.style("opacity", 0)
+            })  
+
+    plot.selectAll(".rectLongYesClick2")
+        .on("mouseenter", function(d) {
+            d3.select(this)
+                .style("fill", "#F24D29")
+            
+            div.style("opacity", 1)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["Coef_startToLogout_yesClick_min"]))
+                .style("left", (xScale(d["Coef_startToLogout_yesClick_min"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "#1DACE8")
+            div.style("opacity", 0)
+            })
+
+    plot.selectAll(".rectLongGap2")
             .on("mouseenter", function(d) {
             // d3.select(this)
             //     .style("fill", "#F24D29")
@@ -265,22 +279,9 @@ function drawTwoBarsWithWaterFallsB(data, response) {
             })            
             .on("mouseleave", function(d) { 
                 d3.select(this)
-                    .style("fill", "indianred")
+                    .style("fill", "#F8DF4F")
                 div.style("opacity", 0)
                 }) 
-     } else {
-
-            plot.selectAll(".rectLongNoClick2, .rectLongYesClick2")
-                .transition()
-                .duration(DURATION)
-                    .style("opacity", 1)
-
-             plot.selectAll(".rectLongGap2")
-                .transition()
-                .duration(DURATION)
-                    .style("opacity", 0)
-    }
-
     
     
 
@@ -294,7 +295,7 @@ function drawTwoBarsWithWaterFallsB(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Pecent of students who clicked on ads by education system"}])
+        .data([{"label": "Average time spent by ad-clicking behavior and education system"}])
         .text(function(d) {return d.label;})
 
 

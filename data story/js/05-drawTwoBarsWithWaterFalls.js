@@ -1,6 +1,5 @@
 function drawTwoBarsWithWaterFalls(data, response) {
     var data = data.sort( (a, b) => d3.descending(a["MEAN.NO"], b["MEAN.NO"]));
-    console.log(data);
 
     //data = data.sort( (a, b) => d3.descending(a["PCT"], b["PCT"]));
     //console.log(data);
@@ -76,7 +75,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
         );
 
     svg.selectAll(".xLabel")
-        .data([{"label": "Percent of students who clicked ads"}])
+        .data([{"label": "Average score in online reading"}])
         .text(d => d.label);
 
 
@@ -97,8 +96,8 @@ function drawTwoBarsWithWaterFalls(data, response) {
         .duration(DURATION)
             .attr("transform", `translate(${margin.left}, ${margin.top})`)
             .call(d3.axisLeft(yScale)
-                .tickSize(3)
-                .tickPadding(0))
+                .tickSize(5)
+                .tickPadding(5))
             .style("text-anchor", "end")
             .style("alignment-baseline", "middle")
             //.style("font-weight", "bold")
@@ -143,7 +142,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
             .attr("x", d => xScale(0))
             .attr("y", d => yScale(d[yGroup]) - yScale.bandwidth()*0.4)
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "green")
+            //.style("fill", "green")
             .style("opacity", 1)
             .attr("width", 0)
             .transition()
@@ -153,22 +152,6 @@ function drawTwoBarsWithWaterFalls(data, response) {
                     return xScale(d["MEAN.NO"]) - xScale(0)
                 });
 
-        plot.selectAll(".rectLongNoClick")
-        .on("mouseenter", function(d) {
-            d3.select(this)
-                .style("fill", "#F24D29")
-            
-            div.style("opacity", 1)
-                //.text([d["Min"]])
-                .html(d3.format(".1f")(d["MEAN.NO"]))
-                .style("left", (xScale(d["MEAN.NO"]) + 142) + "px")
-                .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
-            })              
-        .on("mouseleave", function(d) { 
-            d3.select(this)
-                .style("fill", "green")
-            div.style("opacity", 0)
-            })  
 
         plot.selectAll(".rectLongYesClick")
             .data(data)
@@ -178,7 +161,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
             .attr("x", d => xScale(0))
             .attr("y", d => yScale(d[yGroup]) + yScale.bandwidth()*0.4)
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "red")
+            // .style("fill", "red")
             .style("opacity", 1)
             .attr("width", 0)
             .transition()
@@ -188,22 +171,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
                     return xScale(d["MEAN.YES"]) - xScale(0)
                 });
                 
-        plot.selectAll(".rectLongYesClick")
-        .on("mouseenter", function(d) {
-            d3.select(this)
-                .style("fill", "#F24D29")
-            
-            div.style("opacity", 1)
-                //.text([d["Min"]])
-                .html(d3.format(".1f")(d["MEAN.YES"]))
-                .style("left", (xScale(d["MEAN.YES"]) + 142) + "px")
-                .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
-            })              
-        .on("mouseleave", function(d) { 
-            d3.select(this)
-                .style("fill", "red")
-            div.style("opacity", 0)
-            }) 
+        
         
 
         plot.selectAll(".rectLongGap")
@@ -214,28 +182,13 @@ function drawTwoBarsWithWaterFalls(data, response) {
             .attr("x", d => xScale(d["MEAN.YES"]))
             .attr("y", d => yScale(d[yGroup]) + yScale.bandwidth()*0.4)
             .attr("height", yScale.bandwidth()*0.8)
-            .style("fill", "yellow")
+            // .style("fill", "yellow")
             .attr("width", function(d){
                 return xScale(d["MEAN.GAP"]) - xScale(0)
             })
             .style("opacity", 0)
 
-        plot.selectAll(".rectLongGap")
-        .on("mouseenter", function(d) {
-            // d3.select(this)
-            //     .style("fill", "#F24D29")
-            
-            div.style("opacity", 0)
-                //.text([d["Min"]])
-                .html(d3.format(".1f")(d["MEAN.GAP"]))
-                .style("left", (xScale(d["MEAN.NO"]) + 142) + "px")
-                .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
-            })              
-        .on("mouseleave", function(d) { 
-            d3.select(this)
-                .style("fill", "yellow")
-            div.style("opacity", 0)
-            }) 
+         
     } else {
 
         plot.selectAll(".rectLongNoClick, .rectLongYesClick")
@@ -249,6 +202,56 @@ function drawTwoBarsWithWaterFalls(data, response) {
                 .style("opacity", 0)
     }
 
+    plot.selectAll(".rectLongNoClick")
+        .on("mouseenter", function(d) {
+            d3.select(this)
+                .style("fill", "#F24D29")
+            
+            div.style("opacity", 1)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["MEAN.NO"]))
+                .style("left", (xScale(d["MEAN.NO"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) - yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "#1C366B")
+            div.style("opacity", 0)
+            })
+
+    plot.selectAll(".rectLongYesClick")
+        .on("mouseenter", function(d) {
+            d3.select(this)
+                .style("fill", "#F24D29")
+            
+            div.style("opacity", 1)
+                .html(d3.format(".1f")(d["MEAN.YES"]))
+                .style("left", (xScale(d["MEAN.YES"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "#1DACE8")
+            div.style("opacity", 0)
+            }) 
+
+    plot.selectAll(".rectLongGap")
+        .on("mouseenter", function(d) {
+            // d3.select(this)
+            //     .style("fill", "#F24D29")
+            
+            div.style("opacity", 0)
+                //.text([d["Min"]])
+                .html(d3.format(".1f")(d["MEAN.GAP"]))
+                .style("left", (xScale(d["MEAN.NO"]) + 142) + "px")
+                .style("top", (yScale(d[yGroup]) + yScale.bandwidth()*0.4 + 38) + "px")
+            })              
+        .on("mouseleave", function(d) { 
+            d3.select(this)
+                .style("fill", "#F8DF4F")
+            div.style("opacity", 0)
+            })
+
 
     plot.append("line")
         .attr("class", "lineAverageNoClick")
@@ -256,7 +259,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
         .attr("x2", xScale(537.5))
         .attr("y1", 0)
         .attr("y2", plotHeight)
-        .attr("stroke", "green")
+        .attr("stroke", "#1C366B")
         .attr("stroke-width", "2px")
         .attr("stroke-opacity", 0)
         .lower()
@@ -277,7 +280,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
         .attr("x2", xScale(502.1))
         .attr("y1", 0)
         .attr("y2", plotHeight)
-        .attr("stroke", "red")
+        .attr("stroke", "#1DACE8")
         .attr("stroke-width", "2px")
         .attr("stroke-opacity", 0)
         .lower()
@@ -302,7 +305,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
           //bgPadding: 20,
           //title: "Annotation title"
         },
-        color:"green",
+        color:"#1C366B",
         x: xScale(537.5),
         y: yScale("Slovenia"),
         dy: -50,
@@ -346,7 +349,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
           //bgPadding: 20,
           //title: "Annotation title"
         },
-        color:"red",
+        color:"#1DACE8",
         x: xScale(502.1),
         y: yScale("Abu Dhabi, UAE"),
         dy: -50,
@@ -389,7 +392,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Pecent of students who clicked on ads by education system"}])
+        .data([{"label": "Average score of students by ad-clicking behavior and education system"}])
         .text(function(d) {return d.label;})
 
 
@@ -411,104 +414,6 @@ function drawTwoBarsWithWaterFalls(data, response) {
         .duration(0.5 * DURATION)
         .style("stroke-opacity", 0)    
 
-
-    /****************
-    ***** LOOP  *****
-    *****************/
-    // var i;
-    // for (i = 0; i < moduleVars.length; i ++){
-    //     /***********************
-    //     ***** X & Y SCALES *****
-    //     ***********************/
-    //     // console.log(i)
-    //     // console.log([xMin, xMax])
-    //     // console.log([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)])
-    //     let xScale = d3.scaleLinear()
-    //         .domain([xMin, xMax])
-    //         .range([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)]);
-
-        /***************************************
-        ***** X AXIS, AXIS LABEL, GRIDLINE *****
-        ***************************************/
-
-        // svg.select(".xAxis".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //     .attr("transform", `translate(${margin.left}, ${plotHeight + margin.top})`)
-        //     .call(d3.axisBottom(xScale)
-        //         .ticks(4)
-        //         //.tickFormat(d3.format("d"))
-        //     );
-
-        // svg.select(".xGrid".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //     .attr("transform", `translate(${margin.left}, ${margin.top})`)
-        //     .call(d3.axisBottom(xScale)
-        //         .tickSize(plotHeight)
-        //         .ticks(3)
-        //         .tickFormat("")
-        //     );
-
-
-
-
-
-        
-
-
-
-    //     *******************************
-    //     ***** LINES , CIRCLES, RECTS*****
-    //     ********************************
-
-        // // Append g to hold lines
-        // var plot = svg.select("#plot")
-        //     .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-
-        // let filteredData = data.filter(d => d["Var"] === Object.keys(moduleVars[i])[0]);
-
-        // console.log(filteredData)
-
-        // plot.selectAll(".rect".concat(i))
-        //     .data(filteredData)
-        //     .enter() 
-        //     .append("rect")
-        //     .attr("class", "rect".concat(i))
-        //     .attr("x", d => xScale(0))
-        //     .attr("y", d => yScale(d[yGroup]))
-        //     .attr("height", yScale.bandwidth())
-        //     .style("fill", "blue")
-        //     .attr("width", 0)
-        //     .transition()
-        //     .delay(DURATION)//wait for the removal to happen first
-        //     .duration(DURATION)
-        //         .attr("width", function(d){
-        //             return xScale(d["PCT"]) - xScale(0)
-        //         });
-
-        // plot.selectAll(".line".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();
-
-        // plot.selectAll(".circleLeft".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();
-
-        // plot.selectAll(".circleRight".concat(i))
-        //     .transition()
-        //     .duration(DURATION)
-        //         .style("opacity", 0)
-        //         .remove();        
-
-    //}
-
-    
 
 
 }

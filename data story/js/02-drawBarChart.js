@@ -53,7 +53,7 @@ function drawBarChart(data, response) {
     ***************************************/
 
     svg.selectAll(".xLabel")
-        .data([{"label": "Percent of students who clicked ads"}])
+        .data([{"label": "Percent of students who clicked on ads"}])
         .text(d => d.label);
 
 
@@ -82,8 +82,8 @@ function drawBarChart(data, response) {
     svg.select(".yAxis")
         .attr("transform", `translate(${margin.left}, ${margin.top})`)
         .call(d3.axisLeft(yScale)
-            .tickSize(3)
-            .tickPadding(0))
+            .tickSize(5)
+            .tickPadding(5))
         .style("text-anchor", "end")
         .style("alignment-baseline", "middle")
         //.style("font-weight", "bold")
@@ -107,7 +107,7 @@ function drawBarChart(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Pecent of students who clicked on ads by education system and module"}])
+        .data([{"label": "Pecent of students who clicked on ads by module and education system"}])
         //.enter()
         //.append("text")
         .text(function(d) {return d.label;})
@@ -204,7 +204,7 @@ function drawBarChart(data, response) {
             .attr("x", d => xScale(0))
             .attr("y", d => yScale(d[yGroup]))
             .attr("height", yScale.bandwidth())
-            .style("fill", "blue")
+            // .style("fill", "blue")
             .attr("width", 0)
             .transition()
             .delay(DURATION)//wait for the removal to happen first
@@ -226,7 +226,7 @@ function drawBarChart(data, response) {
                 })              
             .on("mouseleave", function(d) { 
                 d3.select(this)
-                    .style("fill", "blue")
+                    .style("fill", "#1C366B")
                 div.style("opacity", 0)
                 })
 
@@ -270,7 +270,7 @@ function drawBarChart(data, response) {
                 .attr("y", yScale("Abu Dhabi, UAE") - yScale.bandwidth() * 0.4 )
                 .attr("width", xScale(boxWidthAbuDhabi) - xScale(xMin) + 3*2)
                 .attr("height", yScale.bandwidth() + yScale.bandwidth() * 0.8 )
-                .attr("fill", "greenyellow")
+                .attr("fill", "#1DACE8")
                 .style("opacity", 0)
                 .lower();
         }
@@ -284,7 +284,7 @@ function drawBarChart(data, response) {
                 .attr("y", yScale("Sweden") - yScale.bandwidth() * 0.4 )
                 .attr("width", xScale(boxWidthSweden) - xScale(xMin) + 3*2)
                 .attr("height", yScale.bandwidth() + yScale.bandwidth() * 0.8 )
-                .attr("fill", "rosybrown")
+                .attr("fill", "#1DACE8")
                 .style("opacity", 0)
                 .lower();
         }

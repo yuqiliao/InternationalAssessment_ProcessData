@@ -1,6 +1,5 @@
 function drawLongBarChart(data, response) {
     var data = data.sort( (a, b) => d3.descending(a["PCT"], b["PCT"]));
-    console.log(data);
     /**********************
     ***** BASIC SETUP *****
     **********************/
@@ -73,7 +72,7 @@ function drawLongBarChart(data, response) {
         );
 
     svg.selectAll(".xLabel")
-        .data([{"label": "Percent of students who clicked ads"}])
+        .data([{"label": "Percent of students who clicked on ads"}])
         .text(d => d.label);
 
 
@@ -94,8 +93,8 @@ function drawLongBarChart(data, response) {
         .duration(DURATION)
             .attr("transform", `translate(${margin.left}, ${margin.top})`)
             .call(d3.axisLeft(yScale)
-                .tickSize(3)
-                .tickPadding(0))
+                .tickSize(5)
+                .tickPadding(5))
             .style("text-anchor", "end")
             .style("alignment-baseline", "middle")
             //.style("font-weight", "bold")
@@ -137,7 +136,7 @@ function drawLongBarChart(data, response) {
         .attr("x", d => xScale(0))
         .attr("y", d => yScale(d[yGroup]))
         .attr("height", yScale.bandwidth())
-        .style("fill", "blue")
+        //.style("fill", "blue")
         .attr("width", 0)
         .transition()
         .delay(DURATION * 0.5)//wait for the removal to happen first
@@ -160,7 +159,7 @@ function drawLongBarChart(data, response) {
         })              
     .on("mouseleave", function(d) { 
         d3.select(this)
-            .style("fill", "blue")
+            .style("fill", "#1C366B")
         div.style("opacity", 0)
         })
 

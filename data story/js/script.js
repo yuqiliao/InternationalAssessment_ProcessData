@@ -1,23 +1,6 @@
 /*
 ePIRLS data story
 Yuqi Liao
-
-LIBRARIES LOADED IN GLOBAL:
-    - d3
-    - scrollama
-    - intersection-observer
-    - stickyfill
-    - topojson@3
-    - d3-legend
-    - ...
-*/
-
-/*
-STRETCH:
-- mousover chart elements shows detailed tooltip
-- mouseover text highlights elements in chart, surfaces detailed annotations
-- get dynamic resize working
-- mobile compatibility
 */
 
 // scollama code heavily adapted from

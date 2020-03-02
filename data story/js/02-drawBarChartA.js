@@ -53,7 +53,7 @@ function drawBarChartA(data, response) {
     ***************************************/
 
     svg.selectAll(".xLabel")
-        .data([{"label": "Percent of students who clicked ads"}])
+        .data([{"label": "Percent of students who clicked on ads"}])
         .text(d => d.label);
 
 
@@ -102,8 +102,8 @@ function drawBarChartA(data, response) {
     svg.select(".yAxis")
         .attr("transform", `translate(${margin.left}, ${margin.top})`)
         .call(d3.axisLeft(yScale)
-            .tickSize(3)
-            .tickPadding(0))
+            .tickSize(5)
+            .tickPadding(5))
         .style("text-anchor", "end")
         .style("alignment-baseline", "middle")
         //.style("font-weight", "bold")
@@ -257,7 +257,7 @@ function drawBarChartA(data, response) {
             .attr("x", d => xScale(0))
             .attr("y", d => yScale(d[yGroup]))
             .attr("height", yScale.bandwidth())
-            .style("fill", "blue")
+            //.style("fill", "blue")
             .attr("width", 0)
             .transition()
             .delay(DURATION)//wait for the removal to happen first
@@ -279,7 +279,7 @@ function drawBarChartA(data, response) {
             })              
         .on("mouseleave", function(d) { 
             d3.select(this)
-                .style("fill", "blue")
+                .style("fill", "#1C366B")
             div.style("opacity", 0)
             })
 

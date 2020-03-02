@@ -62,7 +62,7 @@ function drawRangeChartB(data, response) {
 
     // chart title
     header.selectAll(".chartTitle")
-        .data([{"label": "Minimun and maximun number of ad-clicks by education system and module"}])
+        .data([{"label": "Minimun and maximun number of ad-clicks by module and education system"}])
         .text(function(d) {return d.label;})
 
     /******************
@@ -105,7 +105,7 @@ function drawRangeChartB(data, response) {
         // console.log([xMin, xMax])
         // console.log([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)])
         let xScale = d3.scaleLinear()
-            .domain([xMin, xMax])
+            .domain([xMin, 600]) //because xMax is 604, replace it into 600 to make the xAxis look nicer
             .range([smallMultipleWidth * i + smallMultiplePadding, smallMultipleWidth * (i+1)]);
 
         /***************************************
@@ -175,9 +175,9 @@ function drawRangeChartB(data, response) {
             .attr("class", "circleLeft".concat(i))
             .attr("cy", d => yScale(d[yGroup]) + yScale.bandwidth()/2 )
             .attr("cx", d => xScale(d["Min"]))
-            .attr("r", 4)
-            .style("fill", "maroon")
-            .style("stroke", "#4A4A4A")
+            .attr("r", 4.5)
+            // .style("fill", "maroon")
+            // .style("stroke", "#4A4A4A")
             .style("stroke-width", "1px")
             .style("opacity", 0)
             .transition()
@@ -193,15 +193,14 @@ function drawRangeChartB(data, response) {
                     .style("stroke", "#F24D29");
                 
                 div.style("opacity", 1)
-                    //.text([d["Min"]])
                     .html("<strong>Minimun</strong>: "+ d["Min"])
                     .style("left", (xScale(d["Min"]) + 86) + "px")
                     .style("top", (yScale(d[yGroup]) + yScale.bandwidth()/2) + "px")
                 })              
             .on("mouseleave", function(d) { 
                 d3.select(this)
-                    .style("fill", "maroon")
-                    .style("stroke", "maroon");
+                    .style("fill", "#1C366B")
+                    .style("stroke", "#1C366B");
                 div.style("opacity", 0); 
                 })
 
@@ -211,10 +210,10 @@ function drawRangeChartB(data, response) {
             .append("circle")
             .attr("class", "circleRight".concat(i))
             .attr("cy", d => yScale(d[yGroup]) + yScale.bandwidth()/2 )
-            .attr("r", 4)
-            .style("fill", "maroon")
+            .attr("r", 4.5)
+            // .style("fill", "maroon")
             .style("opacity", 0)
-            .style("stroke", "#4A4A4A")
+            // .style("stroke", "#4A4A4A")
             .style("stroke-width", "1px")
             .attr("cx", d => xScale(d["Min"]))
             .transition()
@@ -239,8 +238,8 @@ function drawRangeChartB(data, response) {
                 })              
             .on("mouseleave", function(d) { 
                 d3.select(this)
-                    .style("fill", "maroon")
-                    .style("stroke", "maroon");
+                    .style("fill", "#1C366B")
+                    .style("stroke", "#1C366B");
                 div.style("opacity", 0); 
                 });
         }
