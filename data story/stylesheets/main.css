@@ -72,9 +72,9 @@
 
 html,
 body {
-    width: 100%;
+    width: 93%;
     height: 100%;
-    margin: 0;
+    margin: auto;
     padding: 0;
     scroll-behavior: smooth;
 }
@@ -189,6 +189,13 @@ h2 {
 h3 {
     font-family: "Open Sans Bold";
     font-size: 24px;
+    color:#F24D29;
+}
+
+#RQ1, #RQ2, #RQ3, #RQ4{
+    font-family: "Open Sans Bold";
+    font-size: 24px;
+    color:#000000;
 }
 
 /* Outro section titles */
@@ -199,7 +206,7 @@ h4 {
 
 /* Body text */
 p {
-    font-family: "Open Sans";
+    font-family: "Open Sans SemiBold";
     font-size: 16px;
     line-height: 1.8em;
 }
@@ -215,6 +222,10 @@ p {
     line-height: 1.8em;
 }
 
+.textHighlight{
+    font-family: "Open Sans Bold";
+    font-size: 20px;
+}
 
 /*imagies and video*/ 
 .onlineReadingIcon {
@@ -391,8 +402,8 @@ a:hover { border-bottom: 1.5px dotted; }
 /* Plot area gridlines */
 .xGrid line,
 .yGrid line {
-    stroke: #DDDDDD;
-    stroke-opacity: 0.5;
+    stroke: gray;
+    stroke-opacity: 0.3;
 }
 
 /* Outer paths */

@@ -262,6 +262,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
         .attr("stroke", "#1C366B")
         .attr("stroke-width", "2px")
         .attr("stroke-opacity", 0)
+        .attr("stroke-dasharray", 5)
         .lower()
         .transition()
         .delay(function(d){
@@ -283,6 +284,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
         .attr("stroke", "#1DACE8")
         .attr("stroke-width", "2px")
         .attr("stroke-opacity", 0)
+        .attr("stroke-dasharray", 5)
         .lower()
         .transition()
         .delay(function(d){
@@ -307,7 +309,7 @@ function drawTwoBarsWithWaterFalls(data, response) {
         },
         color:"#1C366B",
         x: xScale(537.5),
-        y: yScale("Slovenia"),
+        y: yScale("Portugal"),
         dy: -50,
         dx: 100,
         connector: {
